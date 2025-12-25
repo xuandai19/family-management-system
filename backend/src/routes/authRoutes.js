@@ -9,4 +9,5 @@ const router = express.Router();
 router.post("/register", registerWithMemberInfo);
 // Đăng nhập: Lấy token để sử dụng hệ thống
 router.post("/login", login);
+
 export default router;

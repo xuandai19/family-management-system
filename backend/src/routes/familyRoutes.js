@@ -1,8 +1,8 @@
 import express from "express";
 import {
   getFamilyTree,
-  addMember,
   getAdmins,
+  searchMembers,
 } from "../controllers/familyController.js";
 import { verifyToken } from "../middlewares/authMiddleware.js";
 import { isAdmin } from "../middlewares/roleMiddleware.js";
@@ -14,6 +14,7 @@ router.get("/tree/:rootId", getFamilyTree);
 
 // 2. Bảo mật: Chỉ Admin mới được thêm thành viên mới
 // Luồng chạy: verifyToken (check login) -> isAdmin (check quyền) -> addMember (thực hiện)
-router.post("/member", verifyToken, isAdmin, addMember);
 router.get("/admins", getAdmins);
+router.get("/search", verifyToken, searchMembers);
+
 export default router;
