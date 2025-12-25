@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes.js";
 import familyRoutes from "./routes/familyRoutes.js"; // Import router của bạn
 import adminRoutes from "./routes/adminRoutes.js";
+import fundRoutes from "./routes/fundRoutes.js";
 
 dotenv.config();
 
@@ -25,6 +26,8 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes); //Login, Register, Me
 
 app.use("/api/admin", adminRoutes); // Duyệt yêu cầu, Quản lý User
+
+app.use("/api/fund", fundRoutes); // Quản lý quỹ
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on: http://localhost:${PORT}`);
