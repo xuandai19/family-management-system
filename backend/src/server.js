@@ -1,30 +1,31 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-const cors = require('cors');
-const morgan = require('morgan');
+// src/server.js
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import authRoutes from "./routes/authRoutes.js";
+import familyRoutes from "./routes/familyRoutes.js"; // Import router của bạn
+import adminRoutes from "./routes/adminRoutes.js";
 
 dotenv.config();
 
 const app = express();
+const PORT = process.env.PORT || 5000;
 
-// Middleware
 app.use(cors());
-app.use(morgan('dev'));
 app.use(express.json());
 
-// Route test
-app.get('/', (req, res) => {
-  res.send('Backend Qu?n L? D?ng H? �ang ch?y!');
+// --- KẾT NỐI ROUTES Ở ĐÂY ---
+app.use("/api/family", familyRoutes);
+// Giờ đây các route sẽ có dạng: http://localhost:5000/api/family/tree/1
+
+app.get("/", (req, res) => {
+  res.send("Family Tree API is Online 🚀");
 });
 
-// K?t n?i MongoDB
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB k?t n?i th�nh c�ng'))
-  .catch(err => console.log('MongoDB l?i:', err));
+app.use("/api/auth", authRoutes);
 
-// Kh?i �?ng server
-const PORT = process.env.PORT || 5000;
+app.use("/api/admin", adminRoutes);
+
 app.listen(PORT, () => {
-  console.log(`Server ch?y tr�n port ${PORT}`);
+  console.log(`🚀 Server running on: http://localhost:${PORT}`);
 });
