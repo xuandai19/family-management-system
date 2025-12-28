@@ -1,70 +1,95 @@
 import { supabase } from "../config/supabase.js";
 
 // --- HÀM TỐI ƯU HÓA ĐỂ DỰNG CÂY ---
-const buildTree = (allMembers, rootId) => {
-  // 1. Tạo một Map để nhóm con theo cha hoặc mẹ
+const buildTree = async (allMembers, allMarriages, allSpouses, rootId) => {
+  // 1. Tạo Map nhóm con theo cha
   const childrenMap = new Map();
 
   allMembers.forEach((member) => {
-    // Kiểm tra cha
     if (member.father_id) {
-      if (!childrenMap.has(member.father_id))
+      if (!childrenMap.has(member.father_id)) {
         childrenMap.set(member.father_id, []);
-      childrenMap.get(member.father_id).push(member);
-    }
-    // Kiểm tra mẹ
-    if (member.mother_id) {
-      if (!childrenMap.has(member.mother_id))
-        childrenMap.set(member.mother_id, []);
-      // Tránh push trùng nếu cả cha và mẹ đều trong DB
-      const siblings = childrenMap.get(member.mother_id);
-      if (!siblings.find((s) => s.id === member.id)) {
-        siblings.push(member);
       }
+      childrenMap.get(member.father_id).push(member);
     }
   });
 
-  // 2. Hàm đệ quy sử dụng Map (tránh lặp vô hạn bằng Set để theo dõi ID đã xử lý)
+  // 2. Tạo Map để lấy spouse từ bảng spouses
+  const spouseMap = new Map();
+  allMarriages.forEach((marriage) => {
+    // Tìm spouse từ bảng spouses
+    const spouse = allSpouses.find((s) => s.id === marriage.spouse_id);
+    if (spouse) {
+      spouseMap.set(marriage.member_id, {
+        ...spouse,
+        marriage_date: marriage.marriage_date,
+        marriage_status: marriage.status,
+      });
+    }
+  });
+
+  // 3. Hàm đệ quy - track visited để tránh vòng lặp
   const visited = new Set();
 
-  const getChildren = (parentId) => {
-    if (visited.has(parentId)) return []; // Ngăn chặn vòng lặp vô hạn
-    visited.add(parentId);
+  const getNodeWithChildren = (memberId) => {
+    if (visited.has(memberId)) return null;
+    visited.add(memberId);
 
-    const children = childrenMap.get(parentId) || [];
-    return children.map((child) => ({
-      ...child,
-      children: getChildren(child.id),
-    }));
+    const member = allMembers.find((m) => m.id === memberId);
+    if (!member) return null;
+
+    const children = childrenMap.get(memberId) || [];
+    const spouse = spouseMap.get(memberId);
+
+    return {
+      ...member,
+      spouse: spouse || null,
+      children: children
+        .map((child) => getNodeWithChildren(child.id))
+        .filter(Boolean),
+    };
   };
 
-  // Tìm thành viên gốc
-  const rootMember = allMembers.find((m) => m.id === Number(rootId));
-  if (!rootMember) return null;
-
-  return {
-    ...rootMember,
-    children: getChildren(rootMember.id),
-  };
+  return getNodeWithChildren(Number(rootId));
 };
 
-// Cập nhật API getFamilyTree
+// API getFamilyTree
 export const getFamilyTree = async (req, res) => {
   try {
     const { rootId } = req.params;
 
-    const { data: allMembers, error } = await supabase
+    // Lấy tất cả members (người huyết thống)
+    const { data: allMembers, error: membersError } = await supabase
       .from("family_members")
       .select("*");
 
-    if (error) throw error;
+    if (membersError) throw membersError;
 
-    const tree = buildTree(allMembers, rootId);
+    // Lấy tất cả spouses (vợ/chồng ngoài dòng họ)
+    const { data: allSpouses, error: spousesError } = await supabase
+      .from("spouses")
+      .select("*");
+
+    if (spousesError) throw spousesError;
+
+    // Lấy tất cả marriages (quan hệ hôn nhân)
+    const { data: allMarriages, error: marriagesError } = await supabase
+      .from("marriages")
+      .select("*");
+
+    if (marriagesError) throw marriagesError;
+
+    const tree = await buildTree(
+      allMembers,
+      allMarriages || [],
+      allSpouses || [],
+      rootId
+    );
 
     if (!tree) {
       return res
         .status(404)
-        .json({ success: false, message: "Không tìm thấy gốc!" });
+        .json({ success: false, message: "Không tìm thấy thành viên gốc!" });
     }
 
     return res.status(200).json({ success: true, data: tree });
@@ -72,34 +97,103 @@ export const getFamilyTree = async (req, res) => {
     return res.status(500).json({ success: false, error: err.message });
   }
 };
+
 /**
- * Tìm kiếm và trả về cây con cho mỗi kết quả tìm thấy
+ * Tìm kiếm thành viên (chỉ trong family_members - người huyết thống)
  */
 export const searchMembers = async (req, res) => {
   try {
     const { name } = req.query;
     if (!name) return res.status(400).json({ error: "Thiếu tham số tên" });
 
-    // 1. Lấy toàn bộ data (để dựng cây không bị thiếu nhánh)
-    const { data: allMembers, error } = await supabase
+    const { data: members, error } = await supabase
       .from("family_members")
-      .select("*");
+      .select("id, full_name, gender, generation_level, avatar_url")
+      .ilike("full_name", `%${name}%`);
+
     if (error) throw error;
-
-    // 2. Lọc ra những người khớp tên
-    const matchedMembers = allMembers.filter((m) =>
-      m.full_name.toLowerCase().includes(name.toLowerCase())
-    );
-
-    // 3. Với mỗi người khớp tên, dựng cây con bắt đầu từ họ
-    const results = matchedMembers.map((member) => ({
-      ...member,
-      children: buildTree(allMembers, member.id),
-    }));
 
     return res.status(200).json({
       success: true,
-      data: results,
+      data: members || [],
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+/**
+ * Tìm kiếm cả thành viên và vợ/chồng
+ */
+export const searchAll = async (req, res) => {
+  try {
+    const { name } = req.query;
+    if (!name) return res.status(400).json({ error: "Thiếu tham số tên" });
+
+    // Tìm trong family_members
+    const { data: members, error: membersError } = await supabase
+      .from("family_members")
+      .select("id, full_name, gender, generation_level, avatar_url")
+      .ilike("full_name", `%${name}%`);
+
+    if (membersError) throw membersError;
+
+    // Tìm trong spouses
+    const { data: spouses, error: spousesError } = await supabase
+      .from("spouses")
+      .select("id, full_name, gender, avatar_url")
+      .ilike("full_name", `%${name}%`);
+
+    if (spousesError) throw spousesError;
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        members: members || [],
+        spouses: (spouses || []).map((s) => ({ ...s, is_spouse: true })),
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+/**
+ * Lấy thông tin chi tiết một thành viên
+ */
+export const getMemberDetail = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Lấy thông tin member
+    const { data: member, error: memberError } = await supabase
+      .from("family_members")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (memberError) throw memberError;
+
+    // Lấy thông tin vợ/chồng nếu có
+    const { data: marriage, error: marriageError } = await supabase
+      .from("marriages")
+      .select("*, spouses(*)")
+      .eq("member_id", id)
+      .single();
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        ...member,
+        spouse: marriage?.spouses || null,
+        marriage_info: marriage
+          ? {
+              marriage_date: marriage.marriage_date,
+              status: marriage.status,
+              wedding_location: marriage.wedding_location,
+            }
+          : null,
+      },
     });
   } catch (error) {
     return res.status(500).json({ success: false, error: error.message });

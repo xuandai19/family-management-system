@@ -1,0 +1,81 @@
+/* CARD */
+.auth-card {
+  background: #fff;
+  padding: 40px;
+  border-radius: 20px;
+  width: 420px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+}
+
+.auth-card-large {
+  width: 620px;
+}
+
+/* TITLE */
+.auth-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+/* GRID FORM */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+/* INPUT + SELECT + TEXTAREA */
+.form-grid input,
+.form-grid select,
+.form-grid textarea {
+  height: 48px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  padding: 0 16px;
+  font-size: 15px;
+}
+
+.form-grid textarea {
+  height: 120px;
+  padding-top: 12px;
+  resize: none;
+}
+
+.form-grid input:focus,
+.form-grid select:focus,
+.form-grid textarea:focus {
+  outline: none;
+  border-color: #7aa2ff;
+}
+
+/* FULL ROW */
+.full-row {
+  grid-column: 1 / -1;
+}
+
+/* BUTTON */
+.auth-button {
+  height: 52px;
+  border-radius: 14px;
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  background: linear-gradient(135deg, #7aa2ff, #b17ee7);
+  margin-top: 8px;
+}
+
+/* SWITCH */
+.switch-text {
+  text-align: center;
+  margin-top: 18px;
+  font-size: 14px;
+}
+
+.switch-text span {
+  color: #7a7cff;
+  cursor: pointer;
+  font-weight: 600;
+}

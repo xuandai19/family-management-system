@@ -2,19 +2,14 @@ import { supabase } from "../config/supabase.js";
 
 export const registerWithMemberInfo = async (req, res) => {
   try {
-    const {
-      email,
-      password,
-      username,
-      full_name,
-      gender, // Nên là 'Male', 'Female', hoặc 'Other'
-      birth_date,
-      father_id, // Thay vì parent_id
-      mother_id, // Thêm mother_id
-      spouse_id, // Thêm nếu là vợ/chồng của thành viên cũ
-      bio,
-      address,
-    } = req.body;
+    const { email, password, username } = req.body;
+
+    // Validate input
+    if (!email || !password || !username) {
+      return res.status(400).json({
+        error: "Vui lòng nhập đầy đủ họ tên, email và mật khẩu.",
+      });
+    }
 
     // 1. Tạo tài khoản trên Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -32,44 +27,15 @@ export const registerWithMemberInfo = async (req, res) => {
     const { error: profileError } = await supabase.from("profiles").insert([
       {
         id: userId,
-        username: username || email.split("@")[0],
+        username: username, // Lưu họ tên vào username
         role_id: 3, // Guest
       },
     ]);
     if (profileError) throw profileError;
 
-    // 3. Đóng gói dữ liệu để Admin duyệt
-    // Chuẩn hóa giới tính để khớp với DB Check Constraint
-    const formattedGender = gender
-      ? gender.charAt(0).toUpperCase() + gender.slice(1).toLowerCase()
-      : "Other";
-
-    const { error: requestError } = await supabase
-      .from("update_requests")
-      .insert([
-        {
-          requester_id: userId,
-          target_member_id: null,
-          request_type: "ADD_MEMBER",
-          new_data: {
-            full_name,
-            gender: formattedGender,
-            birth_date: birth_date || null,
-            father_id: father_id || null,
-            mother_id: mother_id || null,
-            spouse_id: spouse_id || null, // Lưu vào JSONB để lúc duyệt sẽ xử lý bảng marriages
-            bio: bio || null,
-            address: address || null,
-          },
-          status: "pending",
-        },
-      ]);
-
-    if (requestError) throw requestError;
-
     return res.status(201).json({
       success: true,
-      message: "Đăng ký thành công! Chờ Admin phê duyệt thông tin gia phả.",
+      message: "Đăng ký thành công! Chờ Admin phê duyệt.",
     });
   } catch (error) {
     return res.status(500).json({ success: false, error: error.message });
