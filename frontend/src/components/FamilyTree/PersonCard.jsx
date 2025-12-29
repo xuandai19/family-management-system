@@ -2,13 +2,13 @@ import React, { forwardRef } from "react";
 import { AgeAvatar } from "./Avatar";
 
 const PersonCard = forwardRef(
-  ({ person, isHighlighted, isSpouse, onClick }, ref) => {
+  ({ person, isHighlighted, isSpouse, spouseOfName, onClick }, ref) => {
     if (!person) return null;
 
     return (
       <div
         ref={ref}
-        onClick={() => onClick?.(person, isSpouse)}
+        onClick={() => onClick?.(person, isSpouse, spouseOfName)}
         className={`min-w-[140px] p-4 flex flex-col items-center rounded-2xl
         border-2 bg-white shadow-lg cursor-pointer
         transition-all duration-300 ease-out
@@ -30,9 +30,7 @@ const PersonCard = forwardRef(
         <span className="text-xs font-bold text-slate-700 text-center mt-2">
           {person.full_name || person.name}
         </span>
-        {isSpouse && (
-          <span className="text-[10px] text-slate-400 mt-1">(Vợ/Chồng)</span>
-        )}
+        {isSpouse && <span className="text-[10px] text-slate-400 mt-1"></span>}
 
         {/* Hover indicator */}
         <div className="mt-2 text-[10px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">

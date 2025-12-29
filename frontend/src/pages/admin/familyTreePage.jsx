@@ -25,6 +25,7 @@ const FamilyTreePage = () => {
   // State cho modal thông tin
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [isSelectedSpouse, setIsSelectedSpouse] = useState(false);
+  const [spouseOfName, setSpouseOfName] = useState(null); // Thêm state mới
 
   const treeContainerRef = useRef(null);
 
@@ -105,14 +106,16 @@ const FamilyTreePage = () => {
   };
 
   // Handler cho click vào person card
-  const handlePersonClick = (person, isSpouse = false) => {
+  const handlePersonClick = (person, isSpouse = false, spouseOfName = null) => {
     setSelectedPerson(person);
     setIsSelectedSpouse(isSpouse);
+    setSpouseOfName(spouseOfName);
   };
 
   const handleCloseModal = () => {
     setSelectedPerson(null);
     setIsSelectedSpouse(false);
+    setSpouseOfName(null);
   };
 
   const isNotDefaultRoot = rootId !== DEFAULT_ROOT_ID;
@@ -218,6 +221,7 @@ const FamilyTreePage = () => {
         <PersonInfoModal
           person={selectedPerson}
           isSpouse={isSelectedSpouse}
+          spouseOf={spouseOfName}
           onClose={handleCloseModal}
         />
       )}

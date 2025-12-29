@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Bạn có thể thêm css toàn cục ở dưới nếu muốn, ví dụ font chữ */
+body {
+  background-color: #f8fafc; /* Màu nền nhẹ cho toàn trang */
+}

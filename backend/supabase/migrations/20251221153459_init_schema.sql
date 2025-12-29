@@ -117,17 +117,63 @@ CREATE INDEX idx_marriages_spouse ON marriages(spouse_id);
 -- ==========================================
 -- 6. PROFILES (AUTH)
 -- ==========================================
+-- ==============================
+-- DROP nếu cần reset
+-- ==============================
+DROP TABLE IF EXISTS profiles CASCADE;
+
+-- ==============================
+-- PROFILES
+-- ==============================
 CREATE TABLE profiles (
-    id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
-    username TEXT UNIQUE,
-    full_name VARCHAR(255),
+    -- Khóa chính = auth.users.id
+    id UUID PRIMARY KEY
+        REFERENCES auth.users(id)
+        ON DELETE CASCADE,
+
+    -- Thông tin hiển thị
+    username TEXT NOT NULL,
     avatar_url TEXT,
-    role_id INTEGER REFERENCES roles(id) DEFAULT 3,
-    member_id INTEGER REFERENCES family_members(id),
-    status VARCHAR(50) DEFAULT 'active',
+
+    -- Phân quyền
+    role_id INTEGER NOT NULL
+        REFERENCES roles(id)
+        DEFAULT 3, -- guest
+
+    -- Liên kết khi đã được duyệt & map vào gia phả
+    member_id INTEGER
+        REFERENCES family_members(id)
+        ON DELETE SET NULL,
+
+    -- ===== THÔNG TIN CÁ NHÂN (DÙNG KHI ĐĂNG KÝ) =====
+    gender VARCHAR(10)
+        CHECK (gender IN ('Male', 'Female', 'Other')),
+
+    birth_date DATE,
+    phone VARCHAR(20),
+
+    father_name VARCHAR(100),
+    mother_name VARCHAR(100),
+    hometown VARCHAR(255),
+
+    registration_note TEXT,
+
+    -- ===== TRẠNG THÁI DUYỆT =====
+    status VARCHAR(20) NOT NULL DEFAULT 'pending'
+        CHECK (status IN ('pending', 'approved', 'rejected')),
+
+    -- ===== TIMESTAMP =====
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+
+    -- ===== CONSTRAINT =====
+    CONSTRAINT unique_username UNIQUE (username)
 );
+
+
+-- Tạo index để tìm kiếm nhanh
+CREATE INDEX IF NOT EXISTS idx_profiles_father_name ON profiles(father_name);
+CREATE INDEX IF NOT EXISTS idx_profiles_status ON profiles(status);
 
 -- ==========================================
 -- 7. UPDATE REQUESTS

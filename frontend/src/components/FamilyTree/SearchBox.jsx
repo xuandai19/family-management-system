@@ -11,7 +11,7 @@ import {
 import { searchAll } from "../../Api/familyTreeApi";
 import { getUniqueAvatar } from "./Avatar";
 
-const SearchBox = ({ onHighlight, onViewTreeFrom }) => {
+const SearchBox = ({ onHighlight }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState({
     members: [],
@@ -202,7 +202,7 @@ const SearchBox = ({ onHighlight, onViewTreeFrom }) => {
                       {spouse.full_name || spouse.name}
                     </div>
                     <div className="text-xs text-pink-400">
-                      Vợ/Chồng (ngoài họ)
+                      Vợ/Chồng của {spouse.member_name || "thành viên trong họ"}
                     </div>
                   </div>
                   <div className="flex gap-1 flex-shrink-0">

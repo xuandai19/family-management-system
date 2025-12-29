@@ -25,6 +25,7 @@ const CoupleNode = ({ member, highlightedId, mainRef, onPersonClick }) => {
             person={{ ...member.spouse, marriage_date: member.marriage_date }}
             isHighlighted={highlightedId === `spouse-${member.spouse.id}`}
             isSpouse
+            spouseOfName={member.full_name || member.name}
             onClick={onPersonClick}
           />
         </>

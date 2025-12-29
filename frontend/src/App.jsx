@@ -5,7 +5,7 @@ import RegisterForm from "./components/Auth/RegisterForm";
 import AdminLayout from "./components/Layout/AdminLayout";
 import AdminDashboard from "./pages/admin/dashboardPage";
 import FamilyTree from "./pages/admin/familyTreePage";
-// import PendingMembers from "./pages/admin/PendingMembers";
+import PendingMembers from "./pages/admin/pendingMemberPage";
 
 function App() {
   return (
@@ -23,7 +23,7 @@ function App() {
           <Route index element={<Navigate to="/admin/dashboard" />} />
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="family-tree" element={<FamilyTree />} />
-          {/* <Route path="pending-members" element={<PendingMembers />} /> */}
+          <Route path="pending-members" element={<PendingMembers />} />
           {/* Thêm các route admin khác tại đây */}
         </Route>
       </Routes>

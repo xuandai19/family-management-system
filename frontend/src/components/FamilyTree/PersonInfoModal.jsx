@@ -11,12 +11,24 @@ import {
 } from "lucide-react";
 import { AgeAvatar } from "./Avatar";
 
-const PersonInfoModal = ({ person, isSpouse, onClose }) => {
+const PersonInfoModal = ({ person, isSpouse, spouseOf, onClose }) => {
   if (!person) return null;
 
   const formatDate = (dateString) => {
     if (!dateString) return "Chưa cập nhật";
     return new Date(dateString).toLocaleDateString("vi-VN");
+  };
+
+  // Xác định vai trò vợ/chồng dựa trên giới tính
+  const getSpouseRole = () => {
+    if (!isSpouse || !spouseOf) return null;
+
+    // Chuẩn hóa gender về lowercase để so sánh
+    const gender = (person.gender || "").toLowerCase();
+    const role =
+      gender === "female" || gender === "f" || gender === "nữ" ? "Vợ" : "Chồng";
+
+    return `${role} của ${spouseOf}`;
   };
 
   return (
@@ -56,10 +68,13 @@ const PersonInfoModal = ({ person, isSpouse, onClose }) => {
             <h3 className="text-xl font-bold text-center">
               {person.full_name || person.name}
             </h3>
-            {isSpouse && (
-              <span className="text-sm opacity-90 mt-1">(Vợ/Chồng)</span>
+            {isSpouse && spouseOf && (
+              <span className="text-sm opacity-90 mt-1 flex items-center gap-1">
+                <Heart size={14} fill="currentColor" />
+                {getSpouseRole()}
+              </span>
             )}
-            {person.generation && (
+            {!isSpouse && person.generation && (
               <span className="text-sm opacity-90 mt-1">
                 Đời thứ {person.generation}
               </span>

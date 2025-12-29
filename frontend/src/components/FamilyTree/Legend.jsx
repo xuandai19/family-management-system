@@ -7,7 +7,7 @@ const Legend = () => {
       <div className="flex flex-wrap gap-x-4 gap-y-1">
         <div className="flex items-center gap-1.5">
           <div className="w-4 h-4 border-2 border-blue-400 rounded bg-white"></div>
-          <span className="text-slate-600">Dòng họ</span>
+          <span className="text-slate-600">Trong họ</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-4 h-4 border-2 border-pink-400 rounded bg-white"></div>
