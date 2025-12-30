@@ -133,8 +133,10 @@ CREATE TABLE profiles (
 
     -- Thông tin hiển thị
     username TEXT NOT NULL,
+    email TEXT NOT NULL,
     avatar_url TEXT,
-
+    type VARCHAR(20)
+        CHECK (type IN ('member', 'spouse')),
     -- Phân quyền
     role_id INTEGER NOT NULL
         REFERENCES roles(id)
@@ -144,6 +146,9 @@ CREATE TABLE profiles (
     member_id INTEGER
         REFERENCES family_members(id)
         ON DELETE SET NULL,
+    spouse_id INTEGER
+        REFERENCES spouses(id)
+        ON DELETE SET NULL,
 
     -- ===== THÔNG TIN CÁ NHÂN (DÙNG KHI ĐĂNG KÝ) =====
     gender VARCHAR(10)
@@ -151,7 +156,7 @@ CREATE TABLE profiles (
 
     birth_date DATE,
     phone VARCHAR(20),
-
+    spouse_name VARCHAR(100),
     father_name VARCHAR(100),
     mother_name VARCHAR(100),
     hometown VARCHAR(255),
@@ -165,10 +170,18 @@ CREATE TABLE profiles (
     -- ===== TIMESTAMP =====
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    -- NÊN LÀ
+UNIQUE (email),
+CONSTRAINT profile_link_check CHECK (
+  (type = 'member' AND member_id IS NOT NULL AND spouse_id IS NULL)
+  OR
+  (type = 'spouse' AND spouse_id IS NOT NULL AND member_id IS NULL)
+  OR
+  (status = 'pending' AND member_id IS NULL AND spouse_id IS NULL)
+)
 
-    -- ===== CONSTRAINT =====
-    CONSTRAINT unique_username UNIQUE (username)
 );
+
 
 
 -- Tạo index để tìm kiếm nhanh

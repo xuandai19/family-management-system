@@ -3,42 +3,37 @@ import {
   Users,
   UserCheck,
   UserX,
-  Search,
   Loader2,
   CheckCircle,
   XCircle,
   Link,
+  Search,
   AlertCircle,
   RefreshCw,
-  User,
   Calendar,
   X,
   Eye,
 } from "lucide-react";
 import {
   getPendingMembers,
-  checkMemberMatch,
   getAllMembers,
-  approveProfile,
   rejectProfile,
+  getAllSpouses,
 } from "../../Api/adminApi";
 import PendingMemberDetailModal from "../../components/PendingMembers/PendingMemberDetailModal";
 
 const PendingMemberPage = () => {
   const [pendingAccounts, setPendingAccounts] = useState([]);
   const [allMembers, setAllMembers] = useState([]);
+  const [allSpouses, setAllSpouses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
-
   // Modal states
-  const [showLinkModal, setShowLinkModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState(null);
-  const [matchingMembers, setMatchingMembers] = useState([]);
-  const [selectedMemberId, setSelectedMemberId] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
-  const [searchMember, setSearchMember] = useState("");
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [searchMember, setSearchMember] = useState("");
 
   // Toast notification
   const [toast, setToast] = useState(null);
@@ -51,17 +46,14 @@ const PendingMemberPage = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [pendingRes, membersRes] = await Promise.all([
+      const [pendingRes, membersRes, spousesRes] = await Promise.all([
         getPendingMembers(),
         getAllMembers(),
+        getAllSpouses(),
       ]);
-
-      if (pendingRes.success) {
-        setPendingAccounts(pendingRes.data || []);
-      }
-      if (membersRes.success) {
-        setAllMembers(membersRes.data || []);
-      }
+      if (pendingRes.success) setPendingAccounts(pendingRes.data || []);
+      if (membersRes.success) setAllMembers(membersRes.data || []);
+      if (spousesRes.success) setAllSpouses(spousesRes.data || []);
     } catch (error) {
       showToast("Lỗi tải dữ liệu: " + error.message, "error");
     }
@@ -72,50 +64,6 @@ const PendingMemberPage = () => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
   };
-
-  // Mở modal liên kết
-  const handleOpenLinkModal = async (account) => {
-    setSelectedAccount(account);
-    setSelectedMemberId(null);
-    setSearchMember("");
-    setActionLoading(account.id);
-
-    try {
-      const res = await checkMemberMatch(account.id);
-      if (res.success) {
-        setMatchingMembers(res.matchingMembers || []);
-      }
-    } catch (error) {
-      setMatchingMembers([]);
-    }
-
-    setActionLoading(null);
-    setShowLinkModal(true);
-  };
-
-  // Duyệt tài khoản
-  const handleApprove = async () => {
-    if (!selectedAccount || !selectedMemberId) {
-      showToast("Vui lòng chọn thành viên để liên kết!", "error");
-      return;
-    }
-
-    setActionLoading("approve");
-    try {
-      const res = await approveProfile(selectedAccount.id, selectedMemberId);
-      if (res.success) {
-        showToast("Duyệt thành công! Tài khoản đã được liên kết.", "success");
-        setPendingAccounts((prev) =>
-          prev.filter((acc) => acc.id !== selectedAccount.id)
-        );
-        setShowLinkModal(false);
-      }
-    } catch (error) {
-      showToast(error.response?.data?.error || "Lỗi duyệt tài khoản!", "error");
-    }
-    setActionLoading(null);
-  };
-
   // Mở modal từ chối
   const handleOpenRejectModal = (account) => {
     setSelectedAccount(account);
@@ -332,212 +280,6 @@ const PendingMemberPage = () => {
           </div>
         )}
       </div>
-
-      {/* ==================== MODAL DUYỆT ==================== */}
-      {showLinkModal && selectedAccount && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-auto">
-            {/* Header */}
-            <div className="px-6 py-4 border-b bg-gradient-to-r from-green-500 to-emerald-500 rounded-t-2xl relative">
-              <button
-                onClick={() => setShowLinkModal(false)}
-                className="absolute top-3 right-3 p-1.5 hover:bg-white/20 rounded-full transition-colors"
-              >
-                <X size={20} className="text-white" />
-              </button>
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <Link size={20} />
-                Liên kết với thành viên
-              </h3>
-              <p className="text-green-100 text-sm mt-1">
-                Chọn thành viên trong gia phả để liên kết
-              </p>
-            </div>
-
-            {/* Body */}
-            <div className="p-6">
-              {/* Account Info */}
-              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-4 mb-5 border border-blue-100">
-                <p className="text-sm text-blue-600 mb-2">Thông tin đăng ký:</p>
-                <div className="space-y-1">
-                  <p className="font-bold text-blue-800 text-lg">
-                    {selectedAccount.username}
-                  </p>
-                  <p className="text-sm text-slate-600">
-                    Giới tính:{" "}
-                    {selectedAccount.gender === "male" ? "Nam" : "Nữ"}
-                  </p>
-                  <p className="text-sm text-slate-600">
-                    Ngày sinh: {formatDate(selectedAccount.birth_date)}
-                  </p>
-                  <p className="text-sm text-slate-600">
-                    Cha:{" "}
-                    <strong>{selectedAccount.father_name || "Không có"}</strong>
-                  </p>
-                  <p className="text-sm text-slate-600">
-                    Mẹ:{" "}
-                    <strong>{selectedAccount.mother_name || "Không có"}</strong>
-                  </p>
-                  {selectedAccount.hometown && (
-                    <p className="text-sm text-slate-600">
-                      Quê: {selectedAccount.hometown}
-                    </p>
-                  )}
-                  {selectedAccount.registration_note && (
-                    <p className="text-sm text-slate-500 italic mt-2">
-                      "{selectedAccount.registration_note}"
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Matching Members */}
-              {matchingMembers.length > 0 && (
-                <div className="mb-5">
-                  <p className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
-                    <CheckCircle size={16} className="text-green-500" />
-                    Gợi ý - Thành viên trùng tên ({matchingMembers.length})
-                  </p>
-                  <div className="space-y-2">
-                    {matchingMembers.map((member) => (
-                      <label
-                        key={member.id}
-                        className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                          selectedMemberId === member.id
-                            ? "border-green-500 bg-green-50 shadow-md"
-                            : "border-slate-200 hover:border-green-300 hover:bg-slate-50"
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="member"
-                          value={member.id}
-                          checked={selectedMemberId === member.id}
-                          onChange={() => setSelectedMemberId(member.id)}
-                          className="w-5 h-5 text-green-500 focus:ring-green-400"
-                        />
-                        <div className="flex-1">
-                          <p className="font-semibold text-slate-800">
-                            {member.full_name}
-                          </p>
-                          <p className="text-sm text-slate-500">
-                            Đời thứ {member.generation_level} •{" "}
-                            {member.gender === "male" ? "Nam" : "Nữ"}
-                            {member.birth_date &&
-                              ` • ${formatDate(member.birth_date)}`}
-                          </p>
-                        </div>
-                        {selectedMemberId === member.id && (
-                          <CheckCircle size={20} className="text-green-500" />
-                        )}
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Divider */}
-              <div className="flex items-center gap-3 my-5">
-                <div className="flex-1 border-t border-slate-200"></div>
-                <span className="text-sm text-slate-400 bg-white px-2">
-                  hoặc tìm kiếm
-                </span>
-                <div className="flex-1 border-t border-slate-200"></div>
-              </div>
-
-              {/* Manual Search */}
-              <div>
-                <p className="text-sm font-semibold text-slate-700 mb-2">
-                  Tìm thành viên khác:
-                </p>
-                <div className="relative">
-                  <Search
-                    size={18}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Nhập tên thành viên..."
-                    value={searchMember}
-                    onChange={(e) => setSearchMember(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-green-200 focus:border-green-500 outline-none transition-all"
-                  />
-                </div>
-
-                {searchMember && (
-                  <div className="mt-2 max-h-48 overflow-auto border-2 border-slate-200 rounded-xl">
-                    {filteredMembers.length === 0 ? (
-                      <p className="p-4 text-sm text-slate-500 text-center">
-                        Không tìm thấy thành viên nào
-                      </p>
-                    ) : (
-                      filteredMembers.slice(0, 10).map((member) => (
-                        <button
-                          key={member.id}
-                          onClick={() => {
-                            setSelectedMemberId(member.id);
-                            setSearchMember("");
-                          }}
-                          className={`w-full text-left px-4 py-3 hover:bg-slate-50 flex items-center gap-3 border-b last:border-b-0 transition-colors ${
-                            selectedMemberId === member.id ? "bg-green-50" : ""
-                          }`}
-                        >
-                          <User size={16} className="text-slate-400" />
-                          <span className="flex-1 font-medium">
-                            {member.full_name}
-                          </span>
-                          <span className="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded">
-                            Đời {member.generation_level}
-                          </span>
-                        </button>
-                      ))
-                    )}
-                  </div>
-                )}
-
-                {/* Selected Member Display */}
-                {selectedMemberId && !searchMember && (
-                  <div className="mt-4 p-4 bg-green-50 border-2 border-green-200 rounded-xl flex items-center gap-3">
-                    <CheckCircle size={20} className="text-green-500" />
-                    <div>
-                      <p className="text-sm text-green-600">Đã chọn:</p>
-                      <p className="font-bold text-green-800">
-                        {
-                          allMembers.find((m) => m.id === selectedMemberId)
-                            ?.full_name
-                        }
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="px-6 py-4 border-t bg-slate-50 rounded-b-2xl flex gap-3 justify-end">
-              <button
-                onClick={() => setShowLinkModal(false)}
-                className="px-5 py-2.5 text-slate-600 hover:bg-slate-200 rounded-lg transition-colors font-medium"
-              >
-                Hủy
-              </button>
-              <button
-                onClick={handleApprove}
-                disabled={!selectedMemberId || actionLoading === "approve"}
-                className="flex items-center gap-2 px-5 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm"
-              >
-                {actionLoading === "approve" ? (
-                  <Loader2 size={18} className="animate-spin" />
-                ) : (
-                  <CheckCircle size={18} />
-                )}
-                Xác nhận duyệt
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ==================== MODAL TỪ CHỐI ==================== */}
       {showRejectModal && selectedAccount && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -621,15 +363,15 @@ const PendingMemberPage = () => {
           onClose={() => setShowDetailModal(false)}
           account={selectedAccount}
           allMembers={allMembers}
+          allSpouses={allSpouses}
+          accountType={selectedAccount.type?.toLowerCase()}
           onApproved={(id) => {
             setPendingAccounts((prev) => prev.filter((acc) => acc.id !== id));
             setShowDetailModal(false);
-            showToast("Duyệt thành công!", "success");
           }}
           onRejected={(id) => {
             setPendingAccounts((prev) => prev.filter((acc) => acc.id !== id));
             setShowDetailModal(false);
-            showToast("Đã từ chối yêu cầu!", "success");
           }}
         />
       )}

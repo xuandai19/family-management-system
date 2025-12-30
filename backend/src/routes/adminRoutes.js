@@ -3,40 +3,63 @@ import {
   approveMemberRegistration,
   rejectMemberRegistration,
   getPendingMemberRequests,
-  checkMemberMatch,
-  linkProfileToMember,
   getAllMembersShort,
+  approveSpouseRegistration,
+  getAllSpousesShort,
 } from "../controllers/adminController.js";
 import { verifyToken, isAdmin } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-// Lấy danh sách tài khoản chờ duyệt
+/**
+ * ===============================
+ * DANH SÁCH CHỜ DUYỆT
+ * ===============================
+ */
+
+// Lấy danh sách tài khoản member/spouse đang chờ duyệt
 router.get("/pending-members", verifyToken, isAdmin, getPendingMemberRequests);
 
-// Kiểm tra tên có khớp với ai trong gia phả không
-router.get("/check-match/:profileId", verifyToken, isAdmin, checkMemberMatch);
+/**
+ * ===============================
+ * MEMBER
+ * ===============================
+ */
 
-// Lấy danh sách tất cả thành viên trong gia phả (cho dropdown chọn)
+// Lấy danh sách member trong gia phả (dropdown chọn)
 router.get("/members", verifyToken, isAdmin, getAllMembersShort);
 
-// Duyệt tài khoản - liên kết với thành viên trong gia phả
+// Duyệt tài khoản MEMBER (admin chọn member_id)
 router.patch(
-  "/approve/:profileId",
+  "/approve-member/:profileId",
   verifyToken,
   isAdmin,
   approveMemberRegistration
 );
 
-// Từ chối yêu cầu đăng ký
-router.delete(
+// Từ chối đăng ký (member hoặc spouse)
+router.patch(
   "/reject/:profileId",
   verifyToken,
   isAdmin,
   rejectMemberRegistration
 );
 
-// Liên kết thủ công profile với member
-router.post("/link-profile", verifyToken, isAdmin, linkProfileToMember);
+/**
+ * ===============================
+ * SPOUSE
+ * ===============================
+ */
+
+// Lấy danh sách spouse (dropdown chọn)
+router.get("/spouses", verifyToken, isAdmin, getAllSpousesShort);
+
+// Duyệt tài khoản SPOUSE (admin chọn spouse_id)
+router.patch(
+  "/approve-spouse/:profileId",
+  verifyToken,
+  isAdmin,
+  approveSpouseRegistration
+);
 
 export default router;

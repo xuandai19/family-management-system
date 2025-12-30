@@ -45,16 +45,26 @@ export const register = async (req, res) => {
       phone,
       father_name,
       mother_name,
+      spouse_name,
       hometown,
-      note, // Lưu ý: FE gửi 'note', DB lưu 'registration_note'
+      note,
+      type, // "Member" hoặc "Spouse"
     } = req.body;
 
-    // 1. Kiểm tra đầu vào bắt buộc theo DB constraint (NOT NULL)
-    if (!email || !password || !username) {
-      return res
-        .status(400)
-        .json({ error: "Email, mật khẩu và họ tên là bắt buộc." });
+    // 1. Kiểm tra đầu vào bắt buộc
+    if (!email || !password || !username || !type) {
+      return res.status(400).json({
+        error: "Email, mật khẩu, họ tên và loại tài khoản là bắt buộc.",
+      });
     }
+    const normalizeType = (type) => {
+      if (!type) return "Member";
+
+      const t = type.toLowerCase();
+      if (t === "spouse") return "Spouse";
+
+      return "Member";
+    };
 
     // 2. Tạo tài khoản trong Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -65,33 +75,43 @@ export const register = async (req, res) => {
     if (authError) {
       return res.status(400).json({ error: authError.message });
     }
-
     if (!authData.user) {
       return res
         .status(400)
         .json({ error: "Không thể khởi tạo tài khoản Auth." });
     }
 
-    // 3. Chèn thông tin vào bảng profiles
-    // Cấu trúc object này phải khớp 100% với các cột trong SQL của bạn
-    const { error: profileError } = await supabase.from("profiles").insert({
-      id: authData.user.id, // Khóa ngoại từ auth.users
-      username: username, // NOT NULL, UNIQUE
-      gender: gender, // Phải là 'Male', 'Female', hoặc 'Other'
+    // 3. Chuẩn bị dữ liệu profile
+    const profileData = {
+      id: authData.user.id,
+      email,
+      username,
+      gender,
       birth_date: birth_date || null,
       phone: phone || null,
-      father_name: father_name || null,
-      mother_name: mother_name || null,
       hometown: hometown || null,
-      registration_note: note || null, // Map note -> registration_note
-      role_id: 3, // Guest (mặc định theo DB)
-      status: "pending", // Mặc định theo DB
-    });
+      registration_note: note || null,
+      role_id: 3,
+      status: "pending",
+      type, // "Member" hoặc "Spouse"
+      // Các trường dưới sẽ được thêm tùy theo loại tài khoản
+    };
 
-    // Nếu lỗi chèn Profile, bạn có thể muốn báo lỗi cụ thể ở đây
+    if (type === "Member") {
+      profileData.father_name = father_name || null;
+      profileData.mother_name = mother_name || null;
+    }
+    if (type === "Spouse") {
+      profileData.spouse_name = spouse_name || null;
+    }
+
+    // 4. Lưu vào bảng profiles
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .insert(profileData);
+
     if (profileError) {
       console.error("Profile Insert Error:", profileError);
-      // Lưu ý: Lúc này User đã được tạo bên Auth, cần Admin xóa nếu muốn đăng ký lại email này
       return res.status(400).json({
         error:
           "Tài khoản đã tạo nhưng không thể lưu thông tin cá nhân. Lỗi: " +

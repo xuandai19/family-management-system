@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   X,
   User,
@@ -17,10 +17,16 @@ const PendingMemberDetailModal = ({
   open,
   onClose,
   account,
-  onApprove,
-  onReject,
-  loading,
+  allMembers,
+  allSpouses,
+  accountType = "member",
+  onApproved,
+  onRejected,
 }) => {
+  const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
+
   if (!open || !account) return null;
 
   const formatDate = (dateString) => {
@@ -28,8 +34,67 @@ const PendingMemberDetailModal = ({
     return new Date(dateString).toLocaleDateString("vi-VN");
   };
 
+  const handleApprove = async () => {
+    if (!selectedId) {
+      setToast({ message: "Vui lòng chọn đối tượng liên kết!", type: "error" });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res =
+        accountType === "spouse"
+          ? await approveSpouseProfile(account.id, selectedId)
+          : await approveProfile(account.id, selectedId);
+
+      if (res.success) {
+        setToast({ message: "Duyệt thành công!", type: "success" });
+        onApproved(account.id);
+      } else {
+        setToast({ message: "Duyệt thất bại!", type: "error" });
+      }
+    } catch (error) {
+      setToast({
+        message: error.response?.data?.error || "Lỗi duyệt tài khoản!",
+        type: "error",
+      });
+    }
+    setLoading(false);
+  };
+
+  const handleReject = async () => {
+    setLoading(true);
+    try {
+      const res = await rejectProfile(account.id, "");
+      if (res.success) {
+        setToast({ message: "Đã từ chối yêu cầu!", type: "success" });
+        onRejected(account.id);
+      } else {
+        setToast({ message: "Lỗi từ chối!", type: "error" });
+      }
+    } catch (error) {
+      setToast({
+        message: error.response?.data?.error || "Lỗi từ chối!",
+        type: "error",
+      });
+    }
+    setLoading(false);
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      {/* Toast Notification */}
+      {toast && (
+        <div
+          className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 ${
+            toast.type === "success"
+              ? "bg-green-500 text-white"
+              : "bg-red-500 text-white"
+          }`}
+        >
+          {toast.message}
+        </div>
+      )}
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-auto relative">
         {/* Header */}
         <div className="px-6 py-4 border-b bg-gradient-to-r from-amber-500 to-yellow-400 rounded-t-2xl flex items-center justify-between">
@@ -69,9 +134,9 @@ const PendingMemberDetailModal = ({
               <User size={16} className="text-slate-400" />
               <span>
                 Giới tính:{" "}
-                {account.gender === "male"
+                {account.gender === "Male"
                   ? "Nam"
-                  : account.gender === "female"
+                  : account.gender === "Female"
                   ? "Nữ"
                   : "-"}
               </span>
@@ -104,6 +169,32 @@ const PendingMemberDetailModal = ({
             )}
           </div>
         </div>
+        <div className="mt-4">
+          <label className="block text-sm font-semibold text-slate-700 mb-2">
+            {accountType === "spouse"
+              ? "Chọn người phối ngẫu để liên kết"
+              : "Chọn thành viên gia phả để liên kết"}
+          </label>
+
+          <select
+            value={selectedId || ""}
+            onChange={(e) => setSelectedId(e.target.value)}
+            className="w-full border rounded-lg px-3 py-2"
+          >
+            <option value="">-- Vui lòng chọn --</option>
+
+            {(accountType === "spouse" ? allSpouses : allMembers).map(
+              (item) => (
+                <option key={item.id} value={item.id}>
+                  {item.full_name}
+                  {item.generation_level
+                    ? ` (Đời ${item.generation_level})`
+                    : ""}
+                </option>
+              )
+            )}
+          </select>
+        </div>
 
         {/* Footer */}
         <div className="px-6 py-4 border-t bg-slate-50 rounded-b-2xl flex gap-3 justify-end">
@@ -114,19 +205,17 @@ const PendingMemberDetailModal = ({
             Đóng
           </button>
           <button
-            onClick={onReject}
+            onClick={handleReject}
             disabled={loading}
             className="flex items-center gap-2 px-5 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium shadow-sm disabled:opacity-50"
           >
-            <XCircle size={18} />
             Từ chối
           </button>
           <button
-            onClick={onApprove}
+            onClick={handleApprove}
             disabled={loading}
             className="flex items-center gap-2 px-5 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium shadow-sm disabled:opacity-50"
           >
-            <CheckCircle size={18} />
             Chấp nhận
           </button>
         </div>

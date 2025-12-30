@@ -1,7 +1,7 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import LoginForm from "./components/Auth/LoginForm";
-import RegisterForm from "./components/Auth/RegisterForm";
+import LoginForm from "./pages/Auth/LoginForm";
+import RegisterForm from "./pages/Auth/RegisterForm";
 import AdminLayout from "./components/Layout/AdminLayout";
 import AdminDashboard from "./pages/admin/dashboardPage";
 import FamilyTree from "./pages/admin/familyTreePage";

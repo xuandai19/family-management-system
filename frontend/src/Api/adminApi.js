@@ -31,3 +31,17 @@ export const rejectProfile = async (profileId, reason) => {
   });
   return response.data;
 };
+
+// Duyệt tài khoản spouse - liên kết với spouse đã có
+export const approveSpouseProfile = async (profileId, spouseId) => {
+  const response = await api.patch(`/admin/approve-spouse/${profileId}`, {
+    spouseId,
+  });
+  return response.data;
+};
+
+// Lấy tất cả spouse (vợ/chồng) cho dropdown
+export const getAllSpouses = async () => {
+  const response = await api.get("/admin/spouses");
+  return response.data;
+};
