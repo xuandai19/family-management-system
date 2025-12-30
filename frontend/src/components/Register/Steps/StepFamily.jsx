@@ -11,9 +11,9 @@ export default function StepFamily({
       <div className="flex p-1 bg-slate-100 rounded-xl">
         <button
           type="button"
-          onClick={() => setAccountType("Member")}
+          onClick={() => setAccountType("member")}
           className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
-            accountType === "Member"
+            accountType === "member"
               ? "bg-white text-[#8B6914] shadow-sm"
               : "text-slate-500"
           }`}
@@ -22,9 +22,9 @@ export default function StepFamily({
         </button>
         <button
           type="button"
-          onClick={() => setAccountType("Spouse")}
+          onClick={() => setAccountType("spouse")}
           className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
-            accountType === "Spouse"
+            accountType === "spouse"
               ? "bg-white text-[#8B6914] shadow-sm"
               : "text-slate-500"
           }`}
@@ -33,7 +33,7 @@ export default function StepFamily({
         </button>
       </div>
 
-      {accountType === "Member" ? (
+      {accountType === "member" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <input
             type="text"

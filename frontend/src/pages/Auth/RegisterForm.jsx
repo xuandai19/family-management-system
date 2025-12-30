@@ -12,7 +12,7 @@ const RegisterForm = () => {
   const [step, setStep] = useState(1); // Bước hiện tại
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [accountType, setAccountType] = useState("Member");
+  const [accountType, setAccountType] = useState("member");
 
   const [formData, setFormData] = useState({
     email: "",
@@ -63,13 +63,13 @@ const RegisterForm = () => {
 
     // Validation cuối cùng cho bước 3
     if (
-      accountType === "Member" &&
+      accountType === "member" &&
       !formData.father_name &&
       !formData.mother_name
     ) {
       return setError("Vui lòng nhập tên Cha hoặc Mẹ để xác thực");
     }
-    if (accountType === "Spouse" && !formData.spouse_name) {
+    if (accountType === "spouse" && !formData.spouse_name) {
       return setError("Vui lòng nhập tên Chồng/Vợ để xác thực");
     }
 
