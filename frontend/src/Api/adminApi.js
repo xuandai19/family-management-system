@@ -6,12 +6,6 @@ export const getPendingMembers = async () => {
   return response.data;
 };
 
-// Kiểm tra tên khớp với ai trong gia phả
-export const checkMemberMatch = async (profileId) => {
-  const response = await api.get(`/admin/check-match/${profileId}`);
-  return response.data;
-};
-
 // Lấy tất cả thành viên trong gia phả (cho dropdown)
 export const getAllMembers = async () => {
   const response = await api.get("/admin/members");
@@ -20,7 +14,9 @@ export const getAllMembers = async () => {
 
 // Duyệt tài khoản - liên kết với thành viên
 export const approveProfile = async (profileId, memberId) => {
-  const response = await api.patch(`/admin/approve/${profileId}`, { memberId });
+  const response = await api.patch(`/admin/approve-member/${profileId}`, {
+    memberId,
+  });
   return response.data;
 };
 

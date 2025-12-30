@@ -12,7 +12,11 @@ import {
   CheckCircle,
   XCircle,
 } from "lucide-react";
-
+import {
+  approveProfile,
+  rejectProfile,
+  approveSpouseProfile,
+} from "../../Api/adminApi";
 const PendingMemberDetailModal = ({
   open,
   onClose,

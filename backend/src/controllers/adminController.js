@@ -41,67 +41,55 @@ export const approveMemberRegistration = async (req, res) => {
     const { profileId } = req.params;
     const { memberId } = req.body;
 
-    if (!memberId) {
-      return res.status(400).json({
-        error: "Bắt buộc chọn thành viên để liên kết",
-      });
-    }
+    if (!memberId)
+      return res
+        .status(400)
+        .json({ error: "Bắt buộc chọn thành viên để liên kết" });
 
-    // 1. Lấy profile
+    // Lấy profile
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("id, username, member_id, spouse_id, type, status")
       .eq("id", profileId)
       .single();
 
-    if (profileError || !profile) {
+    if (profileError || !profile)
       return res.status(404).json({ error: "Không tìm thấy tài khoản" });
-    }
 
-    // 2. Check trạng thái & loại
-    if (profile.status !== "pending") {
+    if (profile.status !== "pending")
       return res
         .status(400)
         .json({ error: "Tài khoản không ở trạng thái chờ duyệt" });
-    }
-
-    if (profile.type !== "Member") {
-      return res
-        .status(400)
-        .json({ error: "Sai loại tài khoản (không phải Member)" });
-    }
-
-    if (profile.member_id || profile.spouse_id) {
+    if (profile.type.toLowerCase() !== "member")
+      return res.status(400).json({ error: "Không phải tài khoản Member" });
+    if (profile.member_id || profile.spouse_id)
       return res.status(400).json({ error: "Tài khoản đã được liên kết" });
-    }
 
-    // 3. Kiểm tra member
+    // Kiểm tra member tồn tại
     const { data: member, error: memberError } = await supabase
       .from("family_members")
-      .select("id, full_name, generation_level")
+      .select("id, full_name")
       .eq("id", memberId)
       .single();
 
-    if (memberError || !member) {
+    if (memberError || !member)
       return res
         .status(404)
         .json({ error: "Không tìm thấy thành viên trong gia phả" });
-    }
 
-    // 4. Check member đã bị link chưa
+    // Check member đã được link chưa
     const { data: existingProfile } = await supabase
       .from("profiles")
       .select("id")
       .eq("member_id", memberId)
       .maybeSingle();
 
-    if (existingProfile) {
-      return res.status(400).json({
-        error: `Thành viên "${member.full_name}" đã được liên kết với tài khoản khác`,
-      });
-    }
+    if (existingProfile)
+      return res
+        .status(400)
+        .json({ error: `Thành viên "${member.full_name}" đã được liên kết` });
 
-    // 5. Update
+    // Update profile
     const { error: updateError } = await supabase
       .from("profiles")
       .update({
@@ -114,17 +102,9 @@ export const approveMemberRegistration = async (req, res) => {
 
     if (updateError) throw updateError;
 
-    return res.status(200).json({
-      success: true,
-      message: "Duyệt thành công",
-      data: {
-        profile_id: profileId,
-        profile_name: profile.username,
-        member_id: member.id,
-        member_name: member.full_name,
-        generation_level: member.generation_level,
-      },
-    });
+    return res
+      .status(200)
+      .json({ success: true, message: "Duyệt Member thành công" });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -176,68 +156,56 @@ export const getAllMembersShort = async (req, res) => {
 export const approveSpouseRegistration = async (req, res) => {
   try {
     const { profileId } = req.params;
-    const { spouseId } = req.body; // Admin chọn spouseId để liên kết
+    const { spouseId } = req.body;
 
-    // 1. Lấy thông tin profile
+    if (!spouseId) return res.status(400).json({ error: "Thiếu spouseId" });
+
+    // Lấy profile
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("id, username, spouse_id, type, status")
       .eq("id", profileId)
       .single();
-    if (profile.status !== "pending") {
+
+    if (profileError || !profile)
+      return res.status(404).json({ error: "Không tìm thấy profile" });
+    if (profile.status !== "pending")
       return res
         .status(400)
-        .json({ error: "Tài khoản không ở trạng thái chờ duyệt" });
-    }
+        .json({ error: "Profile không ở trạng thái chờ duyệt" });
+    if (profile.type.toLowerCase() !== "spouse")
+      return res.status(400).json({ error: "Profile không phải Spouse" });
+    if (profile.spouse_id)
+      return res.status(400).json({ error: "Profile đã liên kết spouse" });
 
-    if (profile.type !== "Spouse") {
-      return res
-        .status(400)
-        .json({ error: "Sai loại tài khoản (không phải Spouse)" });
-    }
-
-    if (profileError || !profile) {
-      return res.status(404).json({ error: "Không tìm thấy tài khoản!" });
-    }
-
-    if (profile.spouse_id) {
-      return res.status(400).json({
-        error: "Tài khoản này đã được liên kết với spouse!",
-      });
-    }
-
-    // 2. Kiểm tra spouse có tồn tại không
+    // Kiểm tra spouse tồn tại
     const { data: spouse, error: spouseError } = await supabase
       .from("spouses")
       .select("id, full_name")
       .eq("id", spouseId)
       .single();
 
-    if (spouseError || !spouse) {
-      return res
-        .status(404)
-        .json({ error: "Không tìm thấy spouse trong hệ thống!" });
-    }
+    if (spouseError || !spouse)
+      return res.status(404).json({ error: "Không tìm thấy spouse" });
 
-    // 3. Kiểm tra spouse đã được liên kết với profile khác chưa
+    // Check spouse đã liên kết chưa
     const { data: existingProfile } = await supabase
       .from("profiles")
-      .select("id, username")
+      .select("id")
       .eq("spouse_id", spouseId)
-      .single();
+      .maybeSingle();
 
-    if (existingProfile) {
-      return res.status(400).json({
-        error: `Spouse "${spouse.full_name}" đã được liên kết với tài khoản "${existingProfile.username}"!`,
-      });
-    }
+    if (existingProfile)
+      return res
+        .status(400)
+        .json({ error: `Spouse "${spouse.full_name}" đã được liên kết` });
 
-    // 4. Cập nhật profile - liên kết với spouse và nâng cấp role
+    // Update profile
     const { error: updateError } = await supabase
       .from("profiles")
       .update({
         spouse_id: spouseId,
-        role_id: 2, // Nếu có phân quyền riêng cho spouse, có thể để 2 hoặc role khác
+        role_id: 2,
         status: "approved",
         updated_at: new Date(),
       })
@@ -245,18 +213,10 @@ export const approveSpouseRegistration = async (req, res) => {
 
     if (updateError) throw updateError;
 
-    return res.status(200).json({
-      success: true,
-      message: "Duyệt thành công! Tài khoản đã được liên kết với spouse.",
-      data: {
-        profile_id: profileId,
-        profile_name: profile.username,
-        spouse_id: spouse.id,
-        spouse_name: spouse.full_name,
-      },
-    });
+    return res
+      .status(200)
+      .json({ success: true, message: "Duyệt Spouse thành công" });
   } catch (error) {
-    console.error("Approve Spouse Error:", error);
     return res.status(500).json({ error: error.message });
   }
 };
