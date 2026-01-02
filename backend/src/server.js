@@ -6,6 +6,7 @@ import authRoutes from "./routes/authRoutes.js";
 import familyRoutes from "./routes/familyRoutes.js"; // Import router của bạn
 import adminRoutes from "./routes/adminRoutes.js";
 import fundRoutes from "./routes/fundRoutes.js";
+import eventRoutes from './routes/eventRoutes.js';
 
 dotenv.config();
 
@@ -28,6 +29,8 @@ app.use("/api/auth", authRoutes); //Login, Register, Me
 app.use("/api/admin", adminRoutes); // Duyệt yêu cầu, Quản lý User
 
 app.use("/api/fund", fundRoutes); // Quản lý quỹ
+
+app.use('/api/events', eventRoutes); // Quản lý sự kiện
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on: http://localhost:${PORT}`);

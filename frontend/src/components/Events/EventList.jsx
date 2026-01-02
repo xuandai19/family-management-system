@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Search,
   RefreshCw,
@@ -14,34 +14,12 @@ import {
   Paperclip,
   ClipboardList,
 } from "lucide-react";
-
-const INITIAL_EVENTS = [
-  {
-    id: 1,
-    name: "Đám giỗ Cụ Nguyễn Khánh An",
-    time: "2025-07-03",
-    location: "Hòa Hải, Đà Nẵng",
-    type: "giỗ",
-    status: "Đã công bố",
-    budget: "5.000.000",
-    relatedPerson: "Nguyễn Khánh An",
-    note: "Chuẩn bị 5 mâm cỗ mặn, mời chi họ 2 và đại diện hội đồng gia tộc.",
-  },
-  {
-    id: 2,
-    name: "Lễ Thanh Minh - Tảo mộ đầu xuân",
-    time: "2025-03-05",
-    location: "Nghĩa trang dòng họ Nguyễn",
-    type: "lễ tết",
-    status: "Chưa công bố",
-    budget: "10.000.000",
-    relatedPerson: "Tất cả con cháu",
-    note: "Tổ chức phát quang, sơn sửa lại các mộ phần trong khu vực của tộc.",
-  },
-];
+import { getEvents, createEvent, updateEvent, deleteEvent } from "../../Api/eventApi.js"; // Import từ file API
 
 const EventList = () => {
-  const [events, setEvents] = useState(INITIAL_EVENTS);
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -55,21 +33,55 @@ const EventList = () => {
     note: "",
   });
 
-  const handleSave = () => {
-    if (!formData.name) return;
-    if (isEditing) {
-      setEvents(
-        events.map((e) => (e.id === formData.id ? { ...formData } : e))
-      );
-    } else {
-      setEvents([...events, { ...formData, id: Date.now() }]);
+  // Fetch events khi component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const data = await getEvents();
+        setEvents(data);
+        setError(null);
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleSave = async () => {
+    try {
+      let updatedEvents;
+      if (isEditing && formData._id) {
+        const updated = await updateEvent(formData._id, formData);
+        updatedEvents = events.map(e => e._id === formData._id ? updated : e);
+      } else {
+        const created = await createEvent(formData);
+        updatedEvents = [...events, created];
+      }
+
+      setEvents(updatedEvents);
+      setShowModal(false);
+      setFormData({
+        name: "",
+        time: "",
+        location: "",
+        type: "giỗ",
+        status: "Chưa công bố",
+        budget: "",
+        relatedPerson: "",
+        note: "",
+      });
+    } catch (err) {
+      alert(`Lỗi khi lưu: ${err}`);
     }
-    setShowModal(false);
   };
 
   return (
     <div className="p-8 bg-[#f0f7f4] min-h-screen font-sans text-left">
-      {/* HEADER - Xanh Emerald tươi sáng như hình 1 */}
+      {/* HEADER - Giữ nguyên như code bạn */}
       <div className="flex justify-between items-center mb-12">
         <div className="relative">
           <h2 className="text-4xl font-black text-emerald-900 tracking-tighter flex items-center gap-4 italic uppercase">
@@ -92,11 +104,11 @@ const EventList = () => {
         </button>
       </div>
 
-      {/* DANH SÁCH BẢNG - Thanh chính màu Xanh Emerald đậm */}
+      {/* DANH SÁCH BẢNG - Thêm loading/error */}
       <div className="bg-white rounded-[3.5rem] shadow-[0_40px_80px_-20px_rgba(6,78,59,0.15)] overflow-hidden border-2 border-emerald-100">
         <table className="w-full text-left border-collapse">
           <thead>
-            {/* Thanh chính màu Xanh Emerald đặc trưng */}
+            {/* Giữ nguyên thead */}
             <tr className="bg-[#10b981] border-b-4 border-emerald-700 text-white">
               <th className="px-8 py-8 text-[12px] font-black uppercase tracking-widest text-emerald-50 text-center w-24">
                 Thứ tự
@@ -116,9 +128,21 @@ const EventList = () => {
             </tr>
           </thead>
           <tbody className="divide-y-4 divide-emerald-50">
-            {events.map((item, index) => (
+            {loading ? (
+              <tr>
+                <td colSpan="5" className="text-center py-20 text-emerald-600 font-black text-xl">
+                  Đang tải sự kiện...
+                </td>
+              </tr>
+            ) : error ? (
+              <tr>
+                <td colSpan="5" className="text-center py-20 text-rose-600 font-black">
+                  {error}
+                </td>
+              </tr>
+            ) : events.map((item, index) => (
               <tr
-                key={item.id}
+                key={item._id} // Sửa id thành _id từ MongoDB
                 className="group hover:bg-[#ecfdf5] transition-all duration-200"
               >
                 <td className="px-8 py-10 text-center font-black text-emerald-800 italic text-xl border-r border-emerald-50">
@@ -139,7 +163,7 @@ const EventList = () => {
                         {item.type}
                       </span>
                       <span className="text-xs text-emerald-800 font-black flex items-center gap-1 italic">
-                        <MapPin size={16} className="text-[#10b981]" />{" "}
+                        <MapPin size={16} className="text-[#10b981]" /> 
                         {item.location}
                       </span>
                     </div>
@@ -171,7 +195,17 @@ const EventList = () => {
                     <button
                       onClick={() => {
                         setIsEditing(true);
-                        setFormData(item);
+                        setFormData({
+                          _id: item._id, // Sửa id thành _id
+                          name: item.name,
+                          time: item.time.split('T')[0], // Format cho input date
+                          location: item.location,
+                          type: item.type,
+                          status: item.status,
+                          budget: item.budget,
+                          relatedPerson: item.relatedPerson,
+                          note: item.note,
+                        });
                         setShowModal(true);
                       }}
                       className="p-4 bg-blue-600 text-white rounded-2xl shadow-lg hover:bg-blue-800 active:scale-90 transition-all"
@@ -179,9 +213,12 @@ const EventList = () => {
                       <Edit size={20} />
                     </button>
                     <button
-                      onClick={() =>
-                        setEvents(events.filter((e) => e.id !== item.id))
-                      }
+                      onClick={async () => {
+                        if (window.confirm('Xác nhận xóa sự kiện?')) {
+                          await deleteEvent(item._id);
+                          setEvents(events.filter(e => e._id !== item._id));
+                        }
+                      }}
                       className="p-4 bg-rose-600 text-white rounded-2xl shadow-lg hover:bg-rose-800 active:scale-90 transition-all"
                     >
                       <Trash2 size={20} />
@@ -194,132 +231,108 @@ const EventList = () => {
         </table>
       </div>
 
-      {/* MODAL - Áp dụng màu Xanh Emerald hài hòa */}
+      {/* MODAL - Form tạo/sửa sự kiện */}
       {showModal && (
-        <div className="fixed inset-0 bg-emerald-950/80 backdrop-blur-2xl flex items-center justify-center z-[100] p-4 text-left">
-          <div className="bg-white rounded-[4.5rem] shadow-[0_60px_150px_-30px_rgba(6,78,59,0.5)] w-full max-w-2xl overflow-hidden border-[15px] border-emerald-100 animate-in zoom-in-90 duration-300">
-            {/* Header Modal - Xanh Emerald tươi sáng */}
-            <div className="p-12 border-b-8 border-emerald-600 bg-emerald-50 flex justify-between items-center relative">
-              <div className="flex items-center gap-6">
-                <div className="p-5 bg-[#10b981] text-white rounded-[2rem] shadow-[0_15px_30px_rgba(16,185,129,0.4)] -rotate-3 border-b-4 border-emerald-700">
-                  <Plus size={32} strokeWidth={4} />
-                </div>
-                <div>
-                  <h3 className="font-black text-4xl text-emerald-950 tracking-tighter uppercase italic leading-none">
-                    {isEditing ? "Cập Nhật Bản Ghi" : "Khai Lập Sự Kiện"}
-                  </h3>
-                  <div className="h-2 w-32 bg-[#10b981] mt-2 rounded-full"></div>
-                </div>
-              </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setShowModal(false)}
+          ></div>
+
+          <div className="relative bg-white rounded-3xl p-8 w-[720px] z-10 shadow-lg">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold">
+                {isEditing ? "Chỉnh sửa sự kiện" : "Khai lập sự kiện"}
+              </h3>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-4 bg-white hover:bg-rose-600 hover:text-white rounded-full transition-all text-emerald-900 shadow-lg border border-emerald-100 active:scale-75"
+                className="p-2 rounded-full hover:bg-gray-100"
+                aria-label="Đóng"
               >
-                <X size={36} strokeWidth={4} />
+                <X />
               </button>
             </div>
 
-            {/* Body Modal */}
-            <div className="p-12 space-y-12 max-h-[60vh] overflow-y-auto custom-scrollbar">
-              <section className="space-y-6">
-                <div className="inline-flex items-center gap-3 bg-emerald-800 text-white px-5 py-2 rounded-xl shadow-lg">
-                  <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
-                  <p className="text-xs font-black uppercase tracking-[0.3em]">
-                    1. Phân loại định danh
-                  </p>
-                </div>
-                <div className="grid grid-cols-3 gap-8">
-                  <div className="col-span-2 text-left">
-                    <label className="block text-xs font-black uppercase text-emerald-900 mb-3 ml-2 tracking-widest">
-                      Tên sự kiện quan trọng *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                      }
-                      className="w-full bg-white border-4 border-emerald-100 rounded-3xl px-8 py-6 outline-none focus:border-[#10b981] font-black text-emerald-950 shadow-[inset_0_4px_10px_rgba(0,0,0,0.05)] transition-all text-xl"
-                      placeholder="VD: GIỖ TỔ..."
-                    />
-                  </div>
-                  <div className="text-left">
-                    <label className="block text-xs font-black uppercase text-emerald-900 mb-3 ml-2 tracking-widest">
-                      Loại hình
-                    </label>
-                    <select
-                      value={formData.type}
-                      onChange={(e) =>
-                        setFormData({ ...formData, type: e.target.value })
-                      }
-                      className="w-full bg-white border-4 border-emerald-100 rounded-3xl px-6 py-6 outline-none focus:border-[#10b981] font-black text-emerald-950 cursor-pointer appearance-none text-center shadow-inner"
-                    >
-                      <option value="giỗ">GIỖ</option>
-                      <option value="họp">HỌP</option>
-                      <option value="lễ tết">LỄ</option>
-                    </select>
-                  </div>
-                </div>
-              </section>
+            <div className="grid grid-cols-2 gap-4">
+              <input
+                className="p-3 border rounded"
+                placeholder="Tên sự kiện"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
 
-              <section className="space-y-6">
-                <div className="inline-flex items-center gap-3 bg-[#059669] text-white px-5 py-2 rounded-xl shadow-lg">
-                  <p className="text-xs font-black uppercase tracking-[0.3em]">
-                    2. Địa điểm & Thời gian
-                  </p>
-                </div>
-                <div className="grid grid-cols-2 gap-10">
-                  <input
-                    type="date"
-                    value={formData.time}
-                    onChange={(e) =>
-                      setFormData({ ...formData, time: e.target.value })
-                    }
-                    className="w-full bg-white border-4 border-emerald-100 rounded-3xl px-8 py-6 outline-none focus:border-[#10b981] font-black text-emerald-900 text-xl shadow-md transition-all"
-                  />
-                  <input
-                    type="text"
-                    value={formData.location}
-                    onChange={(e) =>
-                      setFormData({ ...formData, location: e.target.value })
-                    }
-                    className="w-full bg-white border-4 border-emerald-100 rounded-3xl px-8 py-6 outline-none focus:border-[#10b981] font-black text-emerald-900 shadow-md transition-all"
-                    placeholder="Địa chỉ chi tiết..."
-                  />
-                </div>
-              </section>
+              <input
+                type="date"
+                className="p-3 border rounded"
+                value={formData.time}
+                onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+              />
 
-              <section className="space-y-6 pt-6 border-t-4 border-emerald-50">
-                <div className="inline-flex items-center gap-3 bg-emerald-600 text-white px-5 py-2 rounded-xl shadow-lg">
-                  <p className="text-xs font-black uppercase tracking-[0.3em]">
-                    3. Ghi chép gia tộc
-                  </p>
-                </div>
-                <textarea
-                  value={formData.note}
-                  onChange={(e) =>
-                    setFormData({ ...formData, note: e.target.value })
-                  }
-                  className="w-full bg-emerald-50/20 border-4 border-emerald-100 rounded-[3rem] px-10 py-8 outline-none focus:border-emerald-600 font-bold text-emerald-900 shadow-inner h-52 italic resize-none transition-all text-lg"
-                  placeholder="Mô tả nội dung, danh sách lễ vật..."
-                />
-              </section>
+              <input
+                className="p-3 border rounded col-span-2"
+                placeholder="Địa điểm"
+                value={formData.location}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              />
+
+              <select
+                className="p-3 border rounded"
+                value={formData.type}
+                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+              >
+                <option value="giỗ">giỗ</option>
+                <option value="họp">họp</option>
+                <option value="lễ tết">lễ tết</option>
+                <option value="tu bổ">tu bổ</option>
+                <option value="khác">khác</option>
+              </select>
+
+              <select
+                className="p-3 border rounded"
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              >
+                <option value="Chưa công bố">Chưa công bố</option>
+                <option value="Đã công bố">Đã công bố</option>
+                <option value="Đã hoàn thành">Đã hoàn thành</option>
+                <option value="Hủy">Hủy</option>
+              </select>
+
+              <input
+                className="p-3 border rounded"
+                placeholder="Người liên quan"
+                value={formData.relatedPerson}
+                onChange={(e) => setFormData({ ...formData, relatedPerson: e.target.value })}
+              />
+
+              <input
+                className="p-3 border rounded"
+                placeholder="Ngân sách"
+                value={formData.budget}
+                onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
+              />
+
+              <textarea
+                className="p-3 border rounded col-span-2"
+                rows="4"
+                placeholder="Ghi chú"
+                value={formData.note}
+                onChange={(e) => setFormData({ ...formData, note: e.target.value })}
+              ></textarea>
             </div>
 
-            {/* Footer Modal - Nút xanh Emerald nổi đậm 3D */}
-            <div className="p-12 bg-emerald-950 flex justify-end gap-8 relative text-left overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 via-[#10b981] to-emerald-700"></div>
+            <div className="flex justify-end gap-3 mt-6">
               <button
                 onClick={() => setShowModal(false)}
-                className="px-10 py-5 font-black text-emerald-300 hover:text-white transition-colors uppercase text-sm tracking-widest border-b-2 border-transparent hover:border-emerald-200 underline underline-offset-8 decoration-2"
+                className="px-6 py-3 rounded-2xl border font-bold"
               >
-                Hủy bỏ
+                Hủy
               </button>
               <button
                 onClick={handleSave}
-                className="px-16 py-6 bg-[#10b981] text-emerald-950 rounded-3xl font-black shadow-[0_20px_50px_-10px_rgba(16,185,129,0.6)] hover:bg-white hover:scale-105 active:scale-95 transition-all text-base uppercase tracking-[0.2em] flex items-center gap-4 border-b-8 border-emerald-800"
+                className="px-6 py-3 rounded-2xl bg-emerald-600 text-white font-bold flex items-center gap-2"
               >
-                <Save size={26} strokeWidth={3} /> Lưu Vào Tộc Phả
+                <Save /> Lưu
               </button>
             </div>
           </div>

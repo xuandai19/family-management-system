@@ -1,15 +1,22 @@
 import { createClient } from "@supabase/supabase-js";
 import dotenv from "dotenv";
+import path from "path";
 
-// Khởi tạo dotenv để đọc file .env
-dotenv.config();
+// Khởi tạo dotenv để đọc file .env (rõ ràng về đường dẫn)
+dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-if (!supabaseUrl || !supabaseServiceRoleKey) {
-  throw new Error("Thiếu cấu hình Supabase trong file .env");
+const missing = [];
+if (!supabaseUrl) missing.push("SUPABASE_URL");
+if (!supabaseAnonKey) missing.push("SUPABASE_ANON_KEY");
+if (!supabaseServiceRoleKey) missing.push("SUPABASE_SERVICE_ROLE_KEY");
+if (missing.length > 0) {
+  throw new Error(
+    `Thiếu cấu hình Supabase trong file .env: ${missing.join(", ")}. Kiểm tra file backend/.env hoặc biến môi trường.`
+  );
 }
 
 /**
