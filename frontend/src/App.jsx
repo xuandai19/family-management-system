@@ -7,6 +7,7 @@ import AdminDashboard from "./pages/admin/dashboardPage";
 import FamilyTree from "./pages/admin/familyTreePage";
 import PendingMembers from "./pages/admin/pendingMemberPage";
 import Event from "./pages/admin/eventPage";
+import UserManagement from "./pages/admin/userManagent";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route path="family-tree" element={<FamilyTree />} />
           <Route path="pending-members" element={<PendingMembers />} />
           <Route path="events" element={<Event />} />
+          <Route path="members" element={<UserManagement />} />
           {/* Thêm các route admin khác tại đây */}
         </Route>
       </Routes>

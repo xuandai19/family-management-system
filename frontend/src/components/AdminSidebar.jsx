@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -15,11 +15,32 @@ import {
   FileText,
 } from "lucide-react";
 import LoginBg from "../assets/imgs/Login.jpg";
+import { getPendingMembers } from "../Api/adminApi";
 
 const AdminSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+
+  // Fetch số lượng pending khi component mount
+  useEffect(() => {
+    const fetchPendingCount = async () => {
+      try {
+        const res = await getPendingMembers();
+        if (res.success) {
+          setPendingCount(res.data?.length || 0);
+        }
+      } catch (error) {
+        console.error("Lỗi lấy số pending:", error);
+      }
+    };
+    fetchPendingCount();
+
+    // Refresh mỗi 30 giây
+    const interval = setInterval(fetchPendingCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const menuItems = [
     {
@@ -33,7 +54,7 @@ const AdminSidebar = () => {
       label: "Yêu cầu chờ duyệt",
       icon: UserCheck,
       path: "/admin/pending-members",
-      badge: true,
+      badge: pendingCount, // Số thực từ API
     },
     {
       id: "members",
@@ -134,7 +155,7 @@ const AdminSidebar = () => {
           </div>
         </div>
 
-        {/* Menu Items - không cuộn */}
+        {/* Menu Items */}
         <nav className="flex-1 p-3 space-y-1">
           {menuItems.map((item) => {
             const Icon = item.icon;
@@ -160,9 +181,9 @@ const AdminSidebar = () => {
                 {!isCollapsed && (
                   <>
                     <span className="font-medium text-sm">{item.label}</span>
-                    {item.badge && (
+                    {item.badge > 0 && (
                       <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                        3
+                        {item.badge}
                       </span>
                     )}
                   </>
@@ -172,9 +193,9 @@ const AdminSidebar = () => {
                 {isCollapsed && (
                   <div className="absolute left-full ml-2 px-3 py-2 bg-slate-800 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
                     {item.label}
-                    {item.badge && (
+                    {item.badge > 0 && (
                       <span className="ml-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                        3
+                        {item.badge}
                       </span>
                     )}
                   </div>
@@ -184,33 +205,15 @@ const AdminSidebar = () => {
           })}
         </nav>
 
-        {/* User Info & Logout */}
+        {/* Logout Button */}
         <div className="p-3 border-t border-[#ffe2a1]/20 shrink-0">
-          {/* User Info */}
-          <div
-            className={`flex items-center gap-3 p-3 bg-white/10 backdrop-blur-sm rounded-xl mb-3 ${
-              isCollapsed ? "justify-center" : ""
-            }`}
-          >
-            <div className="w-10 h-10 bg-[#ffe2a1] rounded-full flex items-center justify-center shrink-0">
-              <span className="text-[#8B6914] font-bold text-sm">AD</span>
-            </div>
-            {!isCollapsed && (
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm truncate">Admin</p>
-                <p className="text-[#ffe2a1] text-xs truncate">Trưởng tộc</p>
-              </div>
-            )}
-          </div>
-
-          {/* Logout Button */}
           <button
             onClick={handleLogout}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-500/20 text-red-300 hover:text-red-200 transition-all
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-500/20 text-white/80 hover:text-white transition-colors
               ${isCollapsed ? "justify-center" : ""}
             `}
           >
-            <LogOut size={20} />
+            <LogOut size={20} className="text-red-300" />
             {!isCollapsed && (
               <span className="font-medium text-sm">Đăng xuất</span>
             )}

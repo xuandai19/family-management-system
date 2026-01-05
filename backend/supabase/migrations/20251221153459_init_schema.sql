@@ -333,3 +333,5 @@ CREATE TABLE renovation_logs (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Xóa constraint hoàn toàn (đơn giản nhất)
+ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profile_link_check;

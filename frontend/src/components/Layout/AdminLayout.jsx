@@ -7,13 +7,20 @@ const AdminLayout = () => {
   const token = localStorage.getItem("access_token");
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
+  // Debug - xem console để kiểm tra
+  console.log("Token:", token);
+  console.log("User:", user);
+  console.log("Role ID:", user?.profile?.role_id);
+
   // Chưa đăng nhập
   if (!token) {
     return <Navigate to="/login" replace />;
   }
 
-  // Không phải admin (role_id = 1)
-  if (user?.profile?.role_id !== 1) {
+  // Không phải admin - dùng == để so sánh cả string và number
+  const roleId = user?.profile?.role_id;
+  if (roleId != 1) {
+    console.log("Không phải Admin, redirect về login");
     return <Navigate to="/login" replace />;
   }
 

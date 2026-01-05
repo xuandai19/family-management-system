@@ -1,343 +1,613 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Search,
-  RefreshCw,
   Plus,
-  Edit,
-  Trash2,
-  X,
   Calendar,
-  MapPin,
-  Save,
-  User,
-  DollarSign,
-  Paperclip,
-  ClipboardList,
+  Filter,
+  RefreshCw,
+  Grid3X3,
+  List,
+  ChevronLeft,
+  ChevronRight,
+  Bell,
+  CalendarDays,
+  Loader2,
 } from "lucide-react";
-import { getEvents, createEvent, updateEvent, deleteEvent } from "../../Api/eventApi.js"; // Import từ file API
+import {
+  getEvents,
+  createEvent,
+  updateEvent,
+  deleteEvent,
+  EVENT_TYPES,
+} from "../../Api/eventApi";
+import EventCard from "./EventCard";
+import EventFormModal from "./EventFormModal";
+import EventDetailModal from "./EventDetailModal";
 
 const EventList = () => {
+  // State
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    time: "",
-    location: "",
-    type: "giỗ",
-    status: "Chưa công bố",
-    budget: "",
-    relatedPerson: "",
-    note: "",
-  });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedType, setSelectedType] = useState("all");
+  const [viewMode, setViewMode] = useState("grid"); // grid | list | calendar
+  const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  // Fetch events khi component mount
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const data = await getEvents();
-        setEvents(data);
-        setError(null);
-      } catch (err) {
-        setError(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Modal states
+  const [showFormModal, setShowFormModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [saving, setSaving] = useState(false);
 
-    fetchData();
-  }, []);
-
-  const handleSave = async () => {
+  // Fetch events
+  const fetchEvents = async () => {
     try {
-      let updatedEvents;
-      if (isEditing && formData._id) {
-        const updated = await updateEvent(formData._id, formData);
-        updatedEvents = events.map(e => e._id === formData._id ? updated : e);
-      } else {
-        const created = await createEvent(formData);
-        updatedEvents = [...events, created];
-      }
-
-      setEvents(updatedEvents);
-      setShowModal(false);
-      setFormData({
-        name: "",
-        time: "",
-        location: "",
-        type: "giỗ",
-        status: "Chưa công bố",
-        budget: "",
-        relatedPerson: "",
-        note: "",
-      });
+      setLoading(true);
+      setError(null);
+      const data = await getEvents();
+      setEvents(data || []);
     } catch (err) {
-      alert(`Lỗi khi lưu: ${err}`);
+      setError(typeof err === "string" ? err : "Không thể tải danh sách sự kiện");
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  // Filter events
+  const filteredEvents = useMemo(() => {
+    let result = [...events];
+
+    // Filter by type
+    if (selectedType !== "all") {
+      result = result.filter((e) => e.event_type === selectedType);
+    }
+
+    // Filter by search term
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter(
+        (e) =>
+          e.title?.toLowerCase().includes(term) ||
+          e.description?.toLowerCase().includes(term) ||
+          e.location?.toLowerCase().includes(term)
+      );
+    }
+
+    return result;
+  }, [events, selectedType, searchTerm]);
+
+  // Categorize events
+  const categorizedEvents = useMemo(() => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    const upcoming = [];
+    const past = [];
+    const thisMonth = [];
+
+    filteredEvents.forEach((event) => {
+      const eventDate = new Date(event.event_date);
+      eventDate.setHours(0, 0, 0, 0);
+
+      if (eventDate < now) {
+        past.push(event);
+      } else {
+        upcoming.push(event);
+        // Check if this month
+        if (
+          eventDate.getMonth() === now.getMonth() &&
+          eventDate.getFullYear() === now.getFullYear()
+        ) {
+          thisMonth.push(event);
+        }
+      }
+    });
+
+    // Sort upcoming by date (nearest first)
+    upcoming.sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
+    // Sort past by date (most recent first)
+    past.sort((a, b) => new Date(b.event_date) - new Date(a.event_date));
+
+    return { upcoming, past, thisMonth };
+  }, [filteredEvents]);
+
+  // Handlers
+  const handleCreate = () => {
+    setSelectedEvent(null);
+    setShowFormModal(true);
+  };
+
+  const handleEdit = (event) => {
+    setSelectedEvent(event);
+    setShowFormModal(true);
+  };
+
+  const handleView = (event) => {
+    setSelectedEvent(event);
+    setShowDetailModal(true);
+  };
+
+  const handleDelete = async (event) => {
+    if (!window.confirm(`Bạn có chắc muốn xóa sự kiện "${event.title}"?`)) {
+      return;
+    }
+
+    try {
+      await deleteEvent(event.id);
+      setEvents((prev) => prev.filter((e) => e.id !== event.id));
+    } catch (err) {
+      alert("Lỗi khi xóa sự kiện: " + err);
+    }
+  };
+
+  const handleSave = async (data) => {
+    try {
+      setSaving(true);
+      if (selectedEvent) {
+        // Update
+        const updated = await updateEvent(selectedEvent.id, data);
+        setEvents((prev) =>
+          prev.map((e) => (e.id === selectedEvent.id ? updated : e))
+        );
+      } else {
+        // Create
+        const created = await createEvent(data);
+        setEvents((prev) => [created, ...prev]);
+      }
+      setShowFormModal(false);
+      setSelectedEvent(null);
+    } catch (err) {
+      alert("Lỗi: " + err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Calendar helpers
+  const getCalendarDays = () => {
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth();
+
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+
+    const days = [];
+    const startPadding = firstDay.getDay(); // 0 = Sunday
+
+    // Previous month padding
+    for (let i = 0; i < startPadding; i++) {
+      const date = new Date(year, month, -startPadding + i + 1);
+      days.push({ date, isCurrentMonth: false });
+    }
+
+    // Current month
+    for (let i = 1; i <= lastDay.getDate(); i++) {
+      days.push({ date: new Date(year, month, i), isCurrentMonth: true });
+    }
+
+    // Next month padding
+    const remaining = 42 - days.length;
+    for (let i = 1; i <= remaining; i++) {
+      days.push({ date: new Date(year, month + 1, i), isCurrentMonth: false });
+    }
+
+    return days;
+  };
+
+  const getEventsForDate = (date) => {
+    return filteredEvents.filter((event) => {
+      const eventDate = new Date(event.event_date);
+      return (
+        eventDate.getDate() === date.getDate() &&
+        eventDate.getMonth() === date.getMonth() &&
+        eventDate.getFullYear() === date.getFullYear()
+      );
+    });
+  };
+
+  const calendarDays = getCalendarDays();
+
+  // Stats
+  const stats = {
+    total: events.length,
+    upcoming: categorizedEvents.upcoming.length,
+    thisMonth: categorizedEvents.thisMonth.length,
+  };
+
   return (
-    <div className="p-8 bg-[#f0f7f4] min-h-screen font-sans text-left">
-      {/* HEADER - Giữ nguyên như code bạn */}
-      <div className="flex justify-between items-center mb-12">
-        <div className="relative">
-          <h2 className="text-4xl font-black text-emerald-900 tracking-tighter flex items-center gap-4 italic uppercase">
-            <div className="p-4 bg-[#10b981] rounded-3xl text-white shadow-[0_15px_35px_-10px_rgba(16,185,129,0.6)] border-b-4 border-emerald-700">
-              <Calendar size={36} />
-            </div>
-            Quản Lý Sự Kiện Tộc Phả
-          </h2>
-          <div className="absolute -bottom-3 left-20 w-32 h-2 bg-[#10b981] rounded-full shadow-[0_5px_15px_rgba(16,185,129,0.4)]"></div>
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-6">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
+              <div className="p-3 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-2xl text-white shadow-lg">
+                <Calendar size={28} />
+              </div>
+              Quản lý Sự kiện
+            </h1>
+            <p className="text-gray-500 mt-2">
+              Theo dõi và quản lý các sự kiện của dòng họ
+            </p>
+          </div>
+
+          <button
+            onClick={handleCreate}
+            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl hover:from-emerald-600 hover:to-teal-600 transition-all"
+          >
+            <Plus size={20} />
+            Tạo sự kiện mới
+          </button>
         </div>
 
-        <button
-          onClick={() => {
-            setIsEditing(false);
-            setShowModal(true);
-          }}
-          className="flex items-center gap-3 bg-[#065f46] text-white px-10 py-5 rounded-2xl shadow-[0_20px_40px_-10px_rgba(6,95,70,0.3)] hover:bg-[#059669] hover:-translate-y-1 transition-all duration-300 font-black active:scale-90 text-sm uppercase tracking-[0.2em] border-b-4 border-emerald-900"
-        >
-          <Plus size={22} strokeWidth={4} /> Khai lập sự kiện
-        </button>
-      </div>
-
-      {/* DANH SÁCH BẢNG - Thêm loading/error */}
-      <div className="bg-white rounded-[3.5rem] shadow-[0_40px_80px_-20px_rgba(6,78,59,0.15)] overflow-hidden border-2 border-emerald-100">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            {/* Giữ nguyên thead */}
-            <tr className="bg-[#10b981] border-b-4 border-emerald-700 text-white">
-              <th className="px-8 py-8 text-[12px] font-black uppercase tracking-widest text-emerald-50 text-center w-24">
-                Thứ tự
-              </th>
-              <th className="px-8 py-8 text-[12px] font-black uppercase tracking-widest text-white">
-                Sự kiện & Địa điểm
-              </th>
-              <th className="px-8 py-8 text-[12px] font-black uppercase tracking-widest text-white w-1/3 text-center">
-                Nội dung ghi chú
-              </th>
-              <th className="px-8 py-8 text-[12px] font-black uppercase tracking-widest text-white text-center">
-                Trạng thái
-              </th>
-              <th className="px-8 py-8 text-[12px] font-black uppercase tracking-widest text-white text-center">
-                Hành động
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y-4 divide-emerald-50">
-            {loading ? (
-              <tr>
-                <td colSpan="5" className="text-center py-20 text-emerald-600 font-black text-xl">
-                  Đang tải sự kiện...
-                </td>
-              </tr>
-            ) : error ? (
-              <tr>
-                <td colSpan="5" className="text-center py-20 text-rose-600 font-black">
-                  {error}
-                </td>
-              </tr>
-            ) : events.map((item, index) => (
-              <tr
-                key={item._id} // Sửa id thành _id từ MongoDB
-                className="group hover:bg-[#ecfdf5] transition-all duration-200"
-              >
-                <td className="px-8 py-10 text-center font-black text-emerald-800 italic text-xl border-r border-emerald-50">
-                  #{index + 1}
-                </td>
-
-                <td className="px-8 py-10">
-                  <div className="flex flex-col gap-2">
-                    <span className="font-black text-emerald-950 uppercase text-base tracking-tight leading-none group-hover:text-emerald-600 transition-colors">
-                      {item.name}
-                    </span>
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase shadow-sm ${
-                          item.type === "giỗ" ? "bg-rose-500" : "bg-[#10b981]"
-                        } text-white`}
-                      >
-                        {item.type}
-                      </span>
-                      <span className="text-xs text-emerald-800 font-black flex items-center gap-1 italic">
-                        <MapPin size={16} className="text-[#10b981]" /> 
-                        {item.location}
-                      </span>
-                    </div>
-                  </div>
-                </td>
-
-                <td className="px-8 py-10">
-                  <div className="bg-emerald-50/50 p-6 rounded-3xl border-2 border-emerald-100 group-hover:border-[#10b981] group-hover:bg-white transition-all shadow-inner">
-                    <p className="text-xs text-emerald-900 leading-relaxed font-bold italic text-left">
-                      {item.note || "Hệ thống chưa ghi nhận ghi chú."}
-                    </p>
-                  </div>
-                </td>
-
-                <td className="px-8 py-10 text-center">
-                  <span
-                    className={`inline-flex items-center gap-2 px-6 py-3 rounded-2xl border-4 text-[11px] font-black uppercase tracking-widest shadow-md ${
-                      item.status === "Đã công bố"
-                        ? "text-emerald-900 bg-emerald-50 border-[#10b981] shadow-emerald-100"
-                        : "text-amber-800 bg-amber-50 border-amber-500 shadow-amber-100"
-                    }`}
-                  >
-                    {item.status}
-                  </span>
-                </td>
-
-                <td className="px-8 py-10 text-center">
-                  <div className="flex justify-center gap-3 opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-110">
-                    <button
-                      onClick={() => {
-                        setIsEditing(true);
-                        setFormData({
-                          _id: item._id, // Sửa id thành _id
-                          name: item.name,
-                          time: item.time.split('T')[0], // Format cho input date
-                          location: item.location,
-                          type: item.type,
-                          status: item.status,
-                          budget: item.budget,
-                          relatedPerson: item.relatedPerson,
-                          note: item.note,
-                        });
-                        setShowModal(true);
-                      }}
-                      className="p-4 bg-blue-600 text-white rounded-2xl shadow-lg hover:bg-blue-800 active:scale-90 transition-all"
-                    >
-                      <Edit size={20} />
-                    </button>
-                    <button
-                      onClick={async () => {
-                        if (window.confirm('Xác nhận xóa sự kiện?')) {
-                          await deleteEvent(item._id);
-                          setEvents(events.filter(e => e._id !== item._id));
-                        }
-                      }}
-                      className="p-4 bg-rose-600 text-white rounded-2xl shadow-lg hover:bg-rose-800 active:scale-90 transition-all"
-                    >
-                      <Trash2 size={20} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* MODAL - Form tạo/sửa sự kiện */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setShowModal(false)}
-          ></div>
-
-          <div className="relative bg-white rounded-3xl p-8 w-[720px] z-10 shadow-lg">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold">
-                {isEditing ? "Chỉnh sửa sự kiện" : "Khai lập sự kiện"}
-              </h3>
-              <button
-                onClick={() => setShowModal(false)}
-                className="p-2 rounded-full hover:bg-gray-100"
-                aria-label="Đóng"
-              >
-                <X />
-              </button>
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center gap-4">
+            <div className="p-3 bg-blue-100 rounded-xl">
+              <CalendarDays className="text-blue-600" size={24} />
             </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <input
-                className="p-3 border rounded"
-                placeholder="Tên sự kiện"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              />
-
-              <input
-                type="date"
-                className="p-3 border rounded"
-                value={formData.time}
-                onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-              />
-
-              <input
-                className="p-3 border rounded col-span-2"
-                placeholder="Địa điểm"
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              />
-
-              <select
-                className="p-3 border rounded"
-                value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-              >
-                <option value="giỗ">giỗ</option>
-                <option value="họp">họp</option>
-                <option value="lễ tết">lễ tết</option>
-                <option value="tu bổ">tu bổ</option>
-                <option value="khác">khác</option>
-              </select>
-
-              <select
-                className="p-3 border rounded"
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-              >
-                <option value="Chưa công bố">Chưa công bố</option>
-                <option value="Đã công bố">Đã công bố</option>
-                <option value="Đã hoàn thành">Đã hoàn thành</option>
-                <option value="Hủy">Hủy</option>
-              </select>
-
-              <input
-                className="p-3 border rounded"
-                placeholder="Người liên quan"
-                value={formData.relatedPerson}
-                onChange={(e) => setFormData({ ...formData, relatedPerson: e.target.value })}
-              />
-
-              <input
-                className="p-3 border rounded"
-                placeholder="Ngân sách"
-                value={formData.budget}
-                onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-              />
-
-              <textarea
-                className="p-3 border rounded col-span-2"
-                rows="4"
-                placeholder="Ghi chú"
-                value={formData.note}
-                onChange={(e) => setFormData({ ...formData, note: e.target.value })}
-              ></textarea>
+            <div>
+              <p className="text-2xl font-bold text-gray-800">{stats.total}</p>
+              <p className="text-sm text-gray-500">Tổng sự kiện</p>
             </div>
+          </div>
 
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                onClick={() => setShowModal(false)}
-                className="px-6 py-3 rounded-2xl border font-bold"
-              >
-                Hủy
-              </button>
-              <button
-                onClick={handleSave}
-                className="px-6 py-3 rounded-2xl bg-emerald-600 text-white font-bold flex items-center gap-2"
-              >
-                <Save /> Lưu
-              </button>
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center gap-4">
+            <div className="p-3 bg-emerald-100 rounded-xl">
+              <Calendar className="text-emerald-600" size={24} />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-800">{stats.upcoming}</p>
+              <p className="text-sm text-gray-500">Sắp diễn ra</p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center gap-4">
+            <div className="p-3 bg-amber-100 rounded-xl">
+              <Bell className="text-amber-600" size={24} />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-800">{stats.thisMonth}</p>
+              <p className="text-sm text-gray-500">Trong tháng này</p>
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Filters & Controls */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-6">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+          {/* Search */}
+          <div className="relative flex-1">
+            <Search
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+              size={20}
+            />
+            <input
+              type="text"
+              placeholder="Tìm kiếm sự kiện..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all"
+            />
+          </div>
+
+          {/* Type filter */}
+          <div className="flex items-center gap-2">
+            <Filter size={18} className="text-gray-400" />
+            <select
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+              className="px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-emerald-500 bg-white min-w-[160px]"
+            >
+              <option value="all">Tất cả loại</option>
+              {Object.entries(EVENT_TYPES).map(([key, value]) => (
+                <option key={key} value={key}>
+                  {value.icon} {value.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* View mode toggle */}
+          <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-xl">
+            <button
+              onClick={() => setViewMode("grid")}
+              className={`p-2 rounded-lg transition-colors ${
+                viewMode === "grid"
+                  ? "bg-white shadow text-emerald-600"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <Grid3X3 size={20} />
+            </button>
+            <button
+              onClick={() => setViewMode("list")}
+              className={`p-2 rounded-lg transition-colors ${
+                viewMode === "list"
+                  ? "bg-white shadow text-emerald-600"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <List size={20} />
+            </button>
+            <button
+              onClick={() => setViewMode("calendar")}
+              className={`p-2 rounded-lg transition-colors ${
+                viewMode === "calendar"
+                  ? "bg-white shadow text-emerald-600"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <CalendarDays size={20} />
+            </button>
+          </div>
+
+          {/* Refresh */}
+          <button
+            onClick={fetchEvents}
+            disabled={loading}
+            className="p-3 rounded-xl border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            <RefreshCw size={20} className={loading ? "animate-spin" : ""} />
+          </button>
+        </div>
+
+        {/* Type tabs */}
+        <div className="flex items-center gap-2 mt-4 overflow-x-auto pb-2">
+          <button
+            onClick={() => setSelectedType("all")}
+            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+              selectedType === "all"
+                ? "bg-emerald-100 text-emerald-700"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+          >
+            Tất cả ({events.length})
+          </button>
+          {Object.entries(EVENT_TYPES).map(([key, value]) => {
+            const count = events.filter((e) => e.event_type === key).length;
+            if (count === 0) return null;
+            return (
+              <button
+                key={key}
+                onClick={() => setSelectedType(key)}
+                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-2 ${
+                  selectedType === key
+                    ? "bg-emerald-100 text-emerald-700"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                <span>{value.icon}</span>
+                {value.label} ({count})
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Content */}
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-20">
+          <Loader2 className="w-12 h-12 text-emerald-500 animate-spin mb-4" />
+          <p className="text-gray-500">Đang tải sự kiện...</p>
+        </div>
+      ) : error ? (
+        <div className="bg-red-50 border border-red-200 rounded-2xl p-8 text-center">
+          <p className="text-red-600 font-medium mb-4">{error}</p>
+          <button
+            onClick={fetchEvents}
+            className="px-6 py-2 bg-red-100 text-red-700 rounded-xl hover:bg-red-200 transition-colors"
+          >
+            Thử lại
+          </button>
+        </div>
+      ) : filteredEvents.length === 0 ? (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
+          <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            Chưa có sự kiện nào
+          </h3>
+          <p className="text-gray-500 mb-6">
+            {searchTerm || selectedType !== "all"
+              ? "Không tìm thấy sự kiện phù hợp với bộ lọc"
+              : "Bắt đầu tạo sự kiện đầu tiên cho dòng họ"}
+          </p>
+          <button
+            onClick={handleCreate}
+            className="px-6 py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600 transition-colors"
+          >
+            Tạo sự kiện mới
+          </button>
+        </div>
+      ) : viewMode === "calendar" ? (
+        /* Calendar View */
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          {/* Calendar header */}
+          <div className="flex items-center justify-between mb-6">
+            <button
+              onClick={() =>
+                setCurrentMonth(
+                  new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1)
+                )
+              }
+              className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
+            >
+              <ChevronLeft size={24} />
+            </button>
+            <h2 className="text-xl font-bold text-gray-800">
+              Tháng {currentMonth.getMonth() + 1}, {currentMonth.getFullYear()}
+            </h2>
+            <button
+              onClick={() =>
+                setCurrentMonth(
+                  new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1)
+                )
+              }
+              className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
+            >
+              <ChevronRight size={24} />
+            </button>
+          </div>
+
+          {/* Calendar grid */}
+          <div className="grid grid-cols-7 gap-1">
+            {["CN", "T2", "T3", "T4", "T5", "T6", "T7"].map((day) => (
+              <div
+                key={day}
+                className="text-center py-3 text-sm font-semibold text-gray-500"
+              >
+                {day}
+              </div>
+            ))}
+
+            {calendarDays.map((day, index) => {
+              const dayEvents = getEventsForDate(day.date);
+              const isToday =
+                day.date.toDateString() === new Date().toDateString();
+
+              return (
+                <div
+                  key={index}
+                  className={`min-h-[100px] p-2 border rounded-xl transition-colors ${
+                    day.isCurrentMonth
+                      ? "bg-white border-gray-100"
+                      : "bg-gray-50 border-transparent"
+                  } ${isToday ? "ring-2 ring-emerald-500" : ""}`}
+                >
+                  <p
+                    className={`text-sm font-medium mb-1 ${
+                      day.isCurrentMonth ? "text-gray-800" : "text-gray-400"
+                    } ${isToday ? "text-emerald-600" : ""}`}
+                  >
+                    {day.date.getDate()}
+                  </p>
+                  <div className="space-y-1">
+                    {dayEvents.slice(0, 2).map((event) => {
+                      const eventType =
+                        EVENT_TYPES[event.event_type] || EVENT_TYPES.other;
+                      return (
+                        <button
+                          key={event.id}
+                          onClick={() => handleView(event)}
+                          className={`w-full text-left px-2 py-1 rounded text-xs truncate hover:opacity-80 transition-opacity ${
+                            eventType.color === "pink"
+                              ? "bg-pink-100 text-pink-700"
+                              : eventType.color === "purple"
+                              ? "bg-purple-100 text-purple-700"
+                              : eventType.color === "blue"
+                              ? "bg-blue-100 text-blue-700"
+                              : eventType.color === "amber"
+                              ? "bg-amber-100 text-amber-700"
+                              : eventType.color === "green"
+                              ? "bg-green-100 text-green-700"
+                              : eventType.color === "gray"
+                              ? "bg-gray-100 text-gray-700"
+                              : "bg-slate-100 text-slate-700"
+                          }`}
+                        >
+                          {eventType.icon} {event.title}
+                        </button>
+                      );
+                    })}
+                    {dayEvents.length > 2 && (
+                      <p className="text-xs text-gray-500 text-center">
+                        +{dayEvents.length - 2} sự kiện
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        /* Grid/List View */
+        <div className="space-y-8">
+          {/* Upcoming Events */}
+          {categorizedEvents.upcoming.length > 0 && (
+            <div>
+              <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <span className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse" />
+                Sắp diễn ra ({categorizedEvents.upcoming.length})
+              </h2>
+              <div
+                className={
+                  viewMode === "grid"
+                    ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                    : "space-y-4"
+                }
+              >
+                {categorizedEvents.upcoming.map((event) => (
+                  <EventCard
+                    key={event.id}
+                    event={event}
+                    onView={handleView}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Past Events */}
+          {categorizedEvents.past.length > 0 && (
+            <div>
+              <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <span className="w-3 h-3 bg-gray-400 rounded-full" />
+                Đã qua ({categorizedEvents.past.length})
+              </h2>
+              <div
+                className={
+                  viewMode === "grid"
+                    ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                    : "space-y-4"
+                }
+              >
+                {categorizedEvents.past.map((event) => (
+                  <EventCard
+                    key={event.id}
+                    event={event}
+                    onView={handleView}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       )}
+
+      {/* Modals */}
+      <EventFormModal
+        isOpen={showFormModal}
+        onClose={() => {
+          setShowFormModal(false);
+          setSelectedEvent(null);
+        }}
+        onSave={handleSave}
+        event={selectedEvent}
+        loading={saving}
+      />
+
+      <EventDetailModal
+        isOpen={showDetailModal}
+        onClose={() => {
+          setShowDetailModal(false);
+          setSelectedEvent(null);
+        }}
+        event={selectedEvent}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
     </div>
   );
 };

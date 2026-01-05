@@ -1,4 +1,8 @@
-import { supabase } from "../config/supabase.js";
+import { supabase } from "../../config/supabase.js";
+
+// ===============================
+// QUẢN LÝ YÊU CẦU ĐĂNG KÝ
+// ===============================
 
 // Admin xem danh sách các tài khoản đang chờ duyệt
 export const getPendingMemberRequests = async (req, res) => {
@@ -41,10 +45,11 @@ export const approveMemberRegistration = async (req, res) => {
     const { profileId } = req.params;
     const { memberId } = req.body;
 
-    if (!memberId)
+    if (!memberId) {
       return res
         .status(400)
         .json({ error: "Bắt buộc chọn thành viên để liên kết" });
+    }
 
     // Lấy profile
     const { data: profile, error: profileError } = await supabase
@@ -53,17 +58,21 @@ export const approveMemberRegistration = async (req, res) => {
       .eq("id", profileId)
       .single();
 
-    if (profileError || !profile)
+    if (profileError || !profile) {
       return res.status(404).json({ error: "Không tìm thấy tài khoản" });
+    }
 
-    if (profile.status !== "pending")
+    if (profile.status !== "pending") {
       return res
         .status(400)
         .json({ error: "Tài khoản không ở trạng thái chờ duyệt" });
-    if (profile.type.toLowerCase() !== "member")
+    }
+    if (profile.type.toLowerCase() !== "member") {
       return res.status(400).json({ error: "Không phải tài khoản Member" });
-    if (profile.member_id || profile.spouse_id)
+    }
+    if (profile.member_id || profile.spouse_id) {
       return res.status(400).json({ error: "Tài khoản đã được liên kết" });
+    }
 
     // Kiểm tra member tồn tại
     const { data: member, error: memberError } = await supabase
@@ -72,10 +81,11 @@ export const approveMemberRegistration = async (req, res) => {
       .eq("id", memberId)
       .single();
 
-    if (memberError || !member)
+    if (memberError || !member) {
       return res
         .status(404)
         .json({ error: "Không tìm thấy thành viên trong gia phả" });
+    }
 
     // Check member đã được link chưa
     const { data: existingProfile } = await supabase
@@ -84,10 +94,11 @@ export const approveMemberRegistration = async (req, res) => {
       .eq("member_id", memberId)
       .maybeSingle();
 
-    if (existingProfile)
+    if (existingProfile) {
       return res
         .status(400)
         .json({ error: `Thành viên "${member.full_name}" đã được liên kết` });
+    }
 
     // Update profile
     const { error: updateError } = await supabase
@@ -96,7 +107,7 @@ export const approveMemberRegistration = async (req, res) => {
         member_id: memberId,
         role_id: 2,
         status: "approved",
-        updated_at: new Date(),
+        updated_at: new Date().toISOString(),
       })
       .eq("id", profileId);
 
@@ -116,16 +127,27 @@ export const rejectMemberRegistration = async (req, res) => {
     const { profileId } = req.params;
     const { reason } = req.body;
 
-    const { error } = await supabase
+    // Kiểm tra profile tồn tại
+    const { data: profile, error: findError } = await supabase
+      .from("profiles")
+      .select("id, status")
+      .eq("id", profileId)
+      .single();
+
+    if (findError || !profile) {
+      return res.status(404).json({ error: "Không tìm thấy tài khoản" });
+    }
+
+    // Update status
+    const { error: updateError } = await supabase
       .from("profiles")
       .update({
         status: "rejected",
-        updated_at: new Date(),
+        updated_at: new Date().toISOString(),
       })
-      .eq("id", profileId)
-      .eq("role_id", 3);
+      .eq("id", profileId);
 
-    if (error) throw error;
+    if (updateError) throw updateError;
 
     return res.status(200).json({
       success: true,
@@ -137,28 +159,15 @@ export const rejectMemberRegistration = async (req, res) => {
   }
 };
 
-// Admin xem danh sách tất cả thành viên trong gia phả
-export const getAllMembersShort = async (req, res) => {
-  try {
-    const { data, error } = await supabase
-      .from("family_members")
-      .select("id, full_name, generation_level, gender")
-      .order("full_name", { ascending: true });
-
-    if (error) throw error;
-    return res.status(200).json({ success: true, data });
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
-};
-
-// Admin xác nhận liên kết tài khoản với spouse đã có trong bảng spouses
+// Admin xác nhận liên kết tài khoản với spouse
 export const approveSpouseRegistration = async (req, res) => {
   try {
     const { profileId } = req.params;
     const { spouseId } = req.body;
 
-    if (!spouseId) return res.status(400).json({ error: "Thiếu spouseId" });
+    if (!spouseId) {
+      return res.status(400).json({ error: "Thiếu spouseId" });
+    }
 
     // Lấy profile
     const { data: profile, error: profileError } = await supabase
@@ -167,16 +176,20 @@ export const approveSpouseRegistration = async (req, res) => {
       .eq("id", profileId)
       .single();
 
-    if (profileError || !profile)
+    if (profileError || !profile) {
       return res.status(404).json({ error: "Không tìm thấy profile" });
-    if (profile.status !== "pending")
+    }
+    if (profile.status !== "pending") {
       return res
         .status(400)
         .json({ error: "Profile không ở trạng thái chờ duyệt" });
-    if (profile.type.toLowerCase() !== "spouse")
+    }
+    if (profile.type.toLowerCase() !== "spouse") {
       return res.status(400).json({ error: "Profile không phải Spouse" });
-    if (profile.spouse_id)
+    }
+    if (profile.spouse_id) {
       return res.status(400).json({ error: "Profile đã liên kết spouse" });
+    }
 
     // Kiểm tra spouse tồn tại
     const { data: spouse, error: spouseError } = await supabase
@@ -185,8 +198,9 @@ export const approveSpouseRegistration = async (req, res) => {
       .eq("id", spouseId)
       .single();
 
-    if (spouseError || !spouse)
+    if (spouseError || !spouse) {
       return res.status(404).json({ error: "Không tìm thấy spouse" });
+    }
 
     // Check spouse đã liên kết chưa
     const { data: existingProfile } = await supabase
@@ -195,10 +209,11 @@ export const approveSpouseRegistration = async (req, res) => {
       .eq("spouse_id", spouseId)
       .maybeSingle();
 
-    if (existingProfile)
+    if (existingProfile) {
       return res
         .status(400)
         .json({ error: `Spouse "${spouse.full_name}" đã được liên kết` });
+    }
 
     // Update profile
     const { error: updateError } = await supabase
@@ -207,7 +222,7 @@ export const approveSpouseRegistration = async (req, res) => {
         spouse_id: spouseId,
         role_id: 2,
         status: "approved",
-        updated_at: new Date(),
+        updated_at: new Date().toISOString(),
       })
       .eq("id", profileId);
 
@@ -216,21 +231,6 @@ export const approveSpouseRegistration = async (req, res) => {
     return res
       .status(200)
       .json({ success: true, message: "Duyệt Spouse thành công" });
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
-};
-
-// Lấy danh sách tất cả spouse (vợ/chồng) cho dropdown duyệt
-export const getAllSpousesShort = async (req, res) => {
-  try {
-    const { data, error } = await supabase
-      .from("spouses")
-      .select("id, full_name")
-      .order("full_name", { ascending: true });
-
-    if (error) throw error;
-    return res.status(200).json({ success: true, data });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }

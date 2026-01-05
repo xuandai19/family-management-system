@@ -1,6 +1,8 @@
 import express from "express";
 import {
   getEvents,
+  getEventById,
+  getUpcomingEvents,
   createEvent,
   updateEvent,
   deleteEvent
@@ -12,6 +14,8 @@ const router = express.Router();
 
 // Public cho Member+ xem danh sách
 router.get("/", verifyToken, getEvents);
+router.get("/upcoming", verifyToken, getUpcomingEvents);
+router.get("/:id", verifyToken, getEventById);
 
 // Chỉ Admin mới tạo/sửa/xóa
 router.post("/", verifyToken, isAdmin, createEvent);

@@ -29,21 +29,16 @@ const LoginForm = () => {
       if (result.success) {
         // Lưu token và thông tin user
         localStorage.setItem("access_token", result.access_token);
-        localStorage.setItem("user", JSON.stringify(result.user)); // Lưu toàn bộ user object
+        localStorage.setItem("user", JSON.stringify(result.user));
 
         const roleId = result.user.profile?.role_id;
-        const memberId = result.user.profile?.member_id;
 
-        // Chuyển hướng theo role
-        if (roleId === 1) {
-          // Admin
+        // Chuyển hướng theo role - Admin luôn vào dashboard
+        if (roleId === 1 || roleId === "1") {
           navigate("/admin/dashboard");
-        } else if (memberId) {
-          // Member đã được liên kết
-          navigate("/family-tree");
         } else {
-          // Guest chưa được duyệt
-          navigate("/pending");
+          // Các role khác - tạm thời về login (chưa có trang user)
+          navigate("/login");
         }
       }
     } catch (err) {
