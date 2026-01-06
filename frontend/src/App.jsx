@@ -8,6 +8,7 @@ import FamilyTree from "./pages/admin/familyTreePage";
 import PendingMembers from "./pages/admin/pendingMemberPage";
 import Event from "./pages/admin/eventPage";
 import UserManagement from "./pages/admin/userManagent";
+import FunPage from "./pages/admin/funPage";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           <Route path="pending-members" element={<PendingMembers />} />
           <Route path="events" element={<Event />} />
           <Route path="members" element={<UserManagement />} />
+          <Route path="funds" element={<FunPage />} />
           {/* Thêm các route admin khác tại đây */}
         </Route>
       </Routes>
