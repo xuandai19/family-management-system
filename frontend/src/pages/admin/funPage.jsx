@@ -38,7 +38,7 @@ import {
   CollectionRoundList,
   CollectionRoundModal,
   PaymentManagement,
-} from "../../components/Fund";
+} from "../../components/adminComponents/Fund";
 
 // Danh mục
 const incomeCategories = [

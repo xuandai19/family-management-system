@@ -11,11 +11,12 @@ import {
   ChevronRight,
   Bell,
   Calendar,
+  House,
   Wallet,
   FileText,
 } from "lucide-react";
-import LoginBg from "../assets/imgs/Login.jpg";
-import { getPendingMembers } from "../Api/adminApi";
+import LoginBg from "../../assets/imgs/Login.jpg";
+import { getPendingMembers } from "../../Api/adminApi";
 
 const AdminSidebar = () => {
   const navigate = useNavigate();
@@ -76,9 +77,15 @@ const AdminSidebar = () => {
     },
     {
       id: "funds",
-      label: "Quỹ gia đình",
+      label: "Quỹ dòng họ",
       icon: Wallet,
       path: "/admin/funds",
+    },
+    {
+      id: "ancestral-house",
+      label: "Nhà thờ tổ",
+      icon: House,
+      path: "/admin/ancestral-house",
     },
     {
       id: "posts",

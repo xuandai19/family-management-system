@@ -12,7 +12,7 @@ import {
   Share2,
   ExternalLink,
 } from "lucide-react";
-import { EVENT_TYPES } from "../../Api/eventApi";
+import { EVENT_TYPES } from "../../../Api/eventApi";
 
 // Format date helper
 const formatDate = (dateString) => {
@@ -60,7 +60,14 @@ const getDaysUntil = (eventDate) => {
   return diffDays;
 };
 
-const EventDetailModal = ({ isOpen, onClose, event, onEdit, onDelete, isAdmin = true }) => {
+const EventDetailModal = ({
+  isOpen,
+  onClose,
+  event,
+  onEdit,
+  onDelete,
+  isAdmin = true,
+}) => {
   if (!isOpen || !event) return null;
 
   const eventType = EVENT_TYPES[event.event_type] || EVENT_TYPES.other;
@@ -70,7 +77,11 @@ const EventDetailModal = ({ isOpen, onClose, event, onEdit, onDelete, isAdmin = 
   const colorClasses = {
     pink: { bg: "bg-pink-500", light: "bg-pink-50", text: "text-pink-600" },
     gray: { bg: "bg-gray-500", light: "bg-gray-50", text: "text-gray-600" },
-    purple: { bg: "bg-purple-500", light: "bg-purple-50", text: "text-purple-600" },
+    purple: {
+      bg: "bg-purple-500",
+      light: "bg-purple-50",
+      text: "text-purple-600",
+    },
     blue: { bg: "bg-blue-500", light: "bg-blue-50", text: "text-blue-600" },
     amber: { bg: "bg-amber-500", light: "bg-amber-50", text: "text-amber-600" },
     green: { bg: "bg-green-500", light: "bg-green-50", text: "text-green-600" },
@@ -81,10 +92,20 @@ const EventDetailModal = ({ isOpen, onClose, event, onEdit, onDelete, isAdmin = 
   // Status text
   const getStatusText = () => {
     if (daysUntil === null) return null;
-    if (daysUntil < 0) return { text: `Đã diễn ra ${Math.abs(daysUntil)} ngày trước`, color: "text-gray-500" };
-    if (daysUntil === 0) return { text: "Hôm nay!", color: "text-red-500 font-bold" };
-    if (daysUntil === 1) return { text: "Ngày mai!", color: "text-orange-500 font-bold" };
-    if (daysUntil <= 7) return { text: `Còn ${daysUntil} ngày`, color: "text-amber-500 font-semibold" };
+    if (daysUntil < 0)
+      return {
+        text: `Đã diễn ra ${Math.abs(daysUntil)} ngày trước`,
+        color: "text-gray-500",
+      };
+    if (daysUntil === 0)
+      return { text: "Hôm nay!", color: "text-red-500 font-bold" };
+    if (daysUntil === 1)
+      return { text: "Ngày mai!", color: "text-orange-500 font-bold" };
+    if (daysUntil <= 7)
+      return {
+        text: `Còn ${daysUntil} ngày`,
+        color: "text-amber-500 font-semibold",
+      };
     return { text: `Còn ${daysUntil} ngày`, color: "text-emerald-500" };
   };
 
@@ -95,12 +116,16 @@ const EventDetailModal = ({ isOpen, onClose, event, onEdit, onDelete, isAdmin = 
     if (navigator.share) {
       navigator.share({
         title: event.title,
-        text: `${event.title} - ${formatDate(event.event_date)}${event.location ? ` tại ${event.location}` : ""}`,
+        text: `${event.title} - ${formatDate(event.event_date)}${
+          event.location ? ` tại ${event.location}` : ""
+        }`,
         url: window.location.href,
       });
     } else {
       // Fallback: copy to clipboard
-      const text = `${event.title}\n📅 ${formatDate(event.event_date)}${event.location ? `\n📍 ${event.location}` : ""}`;
+      const text = `${event.title}\n📅 ${formatDate(event.event_date)}${
+        event.location ? `\n📍 ${event.location}` : ""
+      }`;
       navigator.clipboard.writeText(text);
       alert("Đã sao chép thông tin sự kiện!");
     }
@@ -109,12 +134,21 @@ const EventDetailModal = ({ isOpen, onClose, event, onEdit, onDelete, isAdmin = 
   // Add to calendar
   const handleAddToCalendar = () => {
     const startDate = new Date(event.event_date);
-    const endDate = event.end_date ? new Date(event.end_date) : new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
-    
-    const formatGoogleDate = (date) => date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
-    
-    const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${formatGoogleDate(startDate)}/${formatGoogleDate(endDate)}&details=${encodeURIComponent(event.description || "")}&location=${encodeURIComponent(event.location || "")}`;
-    
+    const endDate = event.end_date
+      ? new Date(event.end_date)
+      : new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+
+    const formatGoogleDate = (date) =>
+      date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+
+    const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
+      event.title
+    )}&dates=${formatGoogleDate(startDate)}/${formatGoogleDate(
+      endDate
+    )}&details=${encodeURIComponent(
+      event.description || ""
+    )}&location=${encodeURIComponent(event.location || "")}`;
+
     window.open(googleCalendarUrl, "_blank");
   };
 
@@ -129,7 +163,9 @@ const EventDetailModal = ({ isOpen, onClose, event, onEdit, onDelete, isAdmin = 
       {/* Modal */}
       <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden z-10 animate-in fade-in zoom-in duration-200">
         {/* Header with gradient */}
-        <div className={`${colors.bg} px-6 py-8 text-white relative overflow-hidden`}>
+        <div
+          className={`${colors.bg} px-6 py-8 text-white relative overflow-hidden`}
+        >
           {/* Pattern background */}
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-0 left-0 w-40 h-40 bg-white rounded-full -translate-x-1/2 -translate-y-1/2" />
@@ -160,7 +196,9 @@ const EventDetailModal = ({ isOpen, onClose, event, onEdit, onDelete, isAdmin = 
             <h2 className="text-2xl font-bold mb-2">{event.title}</h2>
 
             {status && (
-              <p className={`text-lg ${status.color} bg-white/90 inline-block px-3 py-1 rounded-lg`}>
+              <p
+                className={`text-lg ${status.color} bg-white/90 inline-block px-3 py-1 rounded-lg`}
+              >
                 {status.text}
               </p>
             )}
@@ -170,7 +208,9 @@ const EventDetailModal = ({ isOpen, onClose, event, onEdit, onDelete, isAdmin = 
         {/* Content */}
         <div className="p-6 space-y-5 overflow-y-auto max-h-[calc(90vh-280px)]">
           {/* Date & Time */}
-          <div className={`flex items-start gap-4 p-4 rounded-xl ${colors.light}`}>
+          <div
+            className={`flex items-start gap-4 p-4 rounded-xl ${colors.light}`}
+          >
             <div className={`p-2 rounded-lg ${colors.bg} text-white`}>
               <Calendar size={20} />
             </div>
@@ -209,7 +249,9 @@ const EventDetailModal = ({ isOpen, onClose, event, onEdit, onDelete, isAdmin = 
               </div>
               <div>
                 <p className="font-semibold text-gray-800">Người liên quan</p>
-                <p className="text-gray-600">{event.related_member.full_name}</p>
+                <p className="text-gray-600">
+                  {event.related_member.full_name}
+                </p>
               </div>
             </div>
           )}
@@ -221,7 +263,8 @@ const EventDetailModal = ({ isOpen, onClose, event, onEdit, onDelete, isAdmin = 
                 <Bell size={20} />
               </div>
               <p className="text-amber-800">
-                Nhắc nhở trước <span className="font-bold">{event.reminder_days} ngày</span>
+                Nhắc nhở trước{" "}
+                <span className="font-bold">{event.reminder_days} ngày</span>
               </p>
             </div>
           )}
@@ -230,14 +273,17 @@ const EventDetailModal = ({ isOpen, onClose, event, onEdit, onDelete, isAdmin = 
           {event.description && (
             <div className="p-4 rounded-xl bg-gray-50">
               <p className="font-semibold text-gray-800 mb-2">Mô tả</p>
-              <p className="text-gray-600 whitespace-pre-line">{event.description}</p>
+              <p className="text-gray-600 whitespace-pre-line">
+                {event.description}
+              </p>
             </div>
           )}
 
           {/* Creator info */}
           {event.creator && (
             <p className="text-sm text-gray-400 text-center">
-              Tạo bởi: {event.creator.username} • {new Date(event.created_at).toLocaleDateString("vi-VN")}
+              Tạo bởi: {event.creator.username} •{" "}
+              {new Date(event.created_at).toLocaleDateString("vi-VN")}
             </p>
           )}
         </div>

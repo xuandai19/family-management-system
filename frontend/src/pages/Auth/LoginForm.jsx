@@ -38,7 +38,7 @@ const LoginForm = () => {
           navigate("/admin/dashboard");
         } else {
           // Các role khác - tạm thời về login (chưa có trang user)
-          navigate("/login");
+          navigate("/UserDashboard");
         }
       }
     } catch (err) {

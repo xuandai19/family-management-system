@@ -208,19 +208,6 @@ CREATE TABLE update_requests (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- ==========================================
--- 8. MEMBER PHOTOS
--- ==========================================
-CREATE TABLE member_photos (
-    id SERIAL PRIMARY KEY,
-    member_id INTEGER REFERENCES family_members(id) ON DELETE CASCADE,
-    photo_url TEXT NOT NULL,
-    description TEXT,
-    photo_date DATE,
-    is_featured BOOLEAN DEFAULT false,
-    uploaded_by UUID REFERENCES profiles(id),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
 
 -- ==========================================
 -- 9. DOCUMENTS (Tài liệu gia phả)

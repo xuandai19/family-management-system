@@ -1,6 +1,6 @@
 import React from "react";
 import { Outlet, Navigate } from "react-router-dom";
-import AdminSidebar from "../AdminSidebar";
+import AdminSidebar from "../adminComponents/AdminSidebar";
 
 const AdminLayout = () => {
   // Kiểm tra đăng nhập và quyền admin

@@ -19,7 +19,7 @@ import {
   updateEvent,
   deleteEvent,
   EVENT_TYPES,
-} from "../../Api/eventApi";
+} from "../../../Api/eventApi";
 import EventCard from "./EventCard";
 import EventFormModal from "./EventFormModal";
 import EventDetailModal from "./EventDetailModal";
@@ -48,7 +48,9 @@ const EventList = () => {
       const data = await getEvents();
       setEvents(data || []);
     } catch (err) {
-      setError(typeof err === "string" ? err : "Không thể tải danh sách sự kiện");
+      setError(
+        typeof err === "string" ? err : "Không thể tải danh sách sự kiện"
+      );
       console.error(err);
     } finally {
       setLoading(false);
@@ -263,7 +265,9 @@ const EventList = () => {
               <Calendar className="text-emerald-600" size={24} />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-800">{stats.upcoming}</p>
+              <p className="text-2xl font-bold text-gray-800">
+                {stats.upcoming}
+              </p>
               <p className="text-sm text-gray-500">Sắp diễn ra</p>
             </div>
           </div>
@@ -273,7 +277,9 @@ const EventList = () => {
               <Bell className="text-amber-600" size={24} />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-800">{stats.thisMonth}</p>
+              <p className="text-2xl font-bold text-gray-800">
+                {stats.thisMonth}
+              </p>
               <p className="text-sm text-gray-500">Trong tháng này</p>
             </div>
           </div>
@@ -434,7 +440,10 @@ const EventList = () => {
             <button
               onClick={() =>
                 setCurrentMonth(
-                  new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1)
+                  new Date(
+                    currentMonth.getFullYear(),
+                    currentMonth.getMonth() - 1
+                  )
                 )
               }
               className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
@@ -447,7 +456,10 @@ const EventList = () => {
             <button
               onClick={() =>
                 setCurrentMonth(
-                  new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1)
+                  new Date(
+                    currentMonth.getFullYear(),
+                    currentMonth.getMonth() + 1
+                  )
                 )
               }
               className="p-2 rounded-xl hover:bg-gray-100 transition-colors"

@@ -25,11 +25,11 @@ import {
   FamilyMembersTable,
   SpousesTable,
   MemberDetailModal,
-} from "../../components/FamilyManagement";
+} from "../../components/adminComponents/FamilyManagement";
 import {
   MemberFormModal,
   DeleteConfirmModal,
-} from "../../components/userManagement";
+} from "../../components/adminComponents/userManagement";
 
 const FamilyManagementPage = () => {
   const [familyMembers, setFamilyMembers] = useState([]);

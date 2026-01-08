@@ -11,10 +11,16 @@ import {
   Repeat,
   Loader2,
 } from "lucide-react";
-import { EVENT_TYPES } from "../../Api/eventApi";
-import { getAllMembers } from "../../Api/adminApi";
+import { EVENT_TYPES } from "../../../Api/eventApi";
+import { getAllMembers } from "../../../Api/adminApi";
 
-const EventFormModal = ({ isOpen, onClose, onSave, event = null, loading = false }) => {
+const EventFormModal = ({
+  isOpen,
+  onClose,
+  onSave,
+  event = null,
+  loading = false,
+}) => {
   const isEditing = !!event;
 
   const [formData, setFormData] = useState({
@@ -62,9 +68,7 @@ const EventFormModal = ({ isOpen, onClose, onSave, event = null, loading = false
         description: event.description || "",
         event_type: event.event_type || "other",
         event_date: eventDate ? eventDate.toISOString().split("T")[0] : "",
-        event_time: eventDate
-          ? eventDate.toTimeString().slice(0, 5)
-          : "",
+        event_time: eventDate ? eventDate.toTimeString().slice(0, 5) : "",
         end_date: endDate ? endDate.toISOString().split("T")[0] : "",
         end_time: endDate ? endDate.toTimeString().slice(0, 5) : "",
         location: event.location || "",
@@ -188,7 +192,10 @@ const EventFormModal = ({ isOpen, onClose, onSave, event = null, loading = false
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+        <form
+          onSubmit={handleSubmit}
+          className="p-6 overflow-y-auto max-h-[calc(90vh-180px)]"
+        >
           <div className="space-y-5">
             {/* Title */}
             <div>
@@ -256,7 +263,9 @@ const EventFormModal = ({ isOpen, onClose, onSave, event = null, loading = false
                   }`}
                 />
                 {errors.event_date && (
-                  <p className="text-red-500 text-sm mt-1">{errors.event_date}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.event_date}
+                  </p>
                 )}
               </div>
               <div>

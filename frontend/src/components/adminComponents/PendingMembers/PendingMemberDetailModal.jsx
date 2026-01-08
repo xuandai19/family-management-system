@@ -16,7 +16,7 @@ import {
   approveProfile,
   rejectProfile,
   approveSpouseProfile,
-} from "../../Api/adminApi";
+} from "../../../Api/adminApi";
 const PendingMemberDetailModal = ({
   open,
   onClose,

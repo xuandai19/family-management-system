@@ -8,6 +8,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 import fundRoutes from "./routes/fundRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
 import collectionRoutes from "./routes/collectionRoutes.js";
+import ancestralHouseRoutes from "./routes/ancestralHouseRoutes.js";
 
 dotenv.config();
 
@@ -34,6 +35,8 @@ app.use("/api/funds", fundRoutes); // Quản lý quỹ
 app.use("/api/events", eventRoutes); // Quản lý sự kiện
 
 app.use("/api/collections", collectionRoutes); // Quản lý đợt thu tiền
+
+app.use("/api/ancestral-house", ancestralHouseRoutes); // Quản lý nhà thờ tổ
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on: http://localhost:${PORT}`);

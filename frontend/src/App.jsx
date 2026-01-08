@@ -9,6 +9,8 @@ import PendingMembers from "./pages/admin/pendingMemberPage";
 import Event from "./pages/admin/eventPage";
 import UserManagement from "./pages/admin/userManagent";
 import FunPage from "./pages/admin/funPage";
+import UserDashboard from "./pages/user/UserDashboard";
+import AncestralHousePage from "./pages/admin/ancestralHousePage";
 
 function App() {
   return (
@@ -30,8 +32,13 @@ function App() {
           <Route path="events" element={<Event />} />
           <Route path="members" element={<UserManagement />} />
           <Route path="funds" element={<FunPage />} />
+          <Route path="ancestral-house" element={<AncestralHousePage />} />
           {/* Thêm các route admin khác tại đây */}
         </Route>
+        {/* 4. USER DASHBOARD */}
+        <Route path="/UserDashboard" element={<UserDashboard />} />
+        {/* 5. KHÔNG TÌM THẤY TRANG */}
+        <Route path="*" element={<div>404 Not Found</div>} />
       </Routes>
     </div>
   );

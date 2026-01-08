@@ -5,7 +5,7 @@ import {
   getUpcomingEvents,
   createEvent,
   updateEvent,
-  deleteEvent
+  deleteEvent,
 } from "../controllers/eventController.js";
 import { verifyToken } from "../middlewares/authMiddleware.js";
 import { isAdmin } from "../middlewares/roleMiddleware.js";
@@ -22,4 +22,4 @@ router.post("/", verifyToken, isAdmin, createEvent);
 router.put("/:id", verifyToken, isAdmin, updateEvent);
 router.delete("/:id", verifyToken, isAdmin, deleteEvent);
 
-export default router; 
+export default router;

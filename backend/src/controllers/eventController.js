@@ -9,11 +9,13 @@ const getEvents = async (req, res) => {
 
     let query = supabase
       .from("events")
-      .select(`
+      .select(
+        `
         *,
         related_member:family_members(id, full_name),
         creator:profiles(id, username)
-      `)
+      `
+      )
       .order("event_date", { ascending: false });
 
     // Filter by event_type
@@ -58,11 +60,13 @@ const getEventById = async (req, res) => {
 
     const { data: event, error } = await supabase
       .from("events")
-      .select(`
+      .select(
+        `
         *,
         related_member:family_members(id, full_name),
         creator:profiles(id, username)
-      `)
+      `
+      )
       .eq("id", id)
       .single();
 
@@ -85,10 +89,12 @@ const getUpcomingEvents = async (req, res) => {
 
     const { data: events, error } = await supabase
       .from("events")
-      .select(`
+      .select(
+        `
         *,
         related_member:family_members(id, full_name)
-      `)
+      `
+      )
       .gte("event_date", now)
       .order("event_date", { ascending: true })
       .limit(parseInt(limit));
@@ -243,4 +249,11 @@ const deleteEvent = async (req, res) => {
 };
 
 // Export tất cả (ESM)
-export { getEvents, getEventById, getUpcomingEvents, createEvent, updateEvent, deleteEvent };
+export {
+  getEvents,
+  getEventById,
+  getUpcomingEvents,
+  createEvent,
+  updateEvent,
+  deleteEvent,
+};

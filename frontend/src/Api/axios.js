@@ -10,7 +10,10 @@ const api = axios.create({
 // Gắn token vào mỗi lần gửi request
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("access_token");
-  console.log("Token being sent:", token ? token.substring(0, 50) + "..." : "NO TOKEN"); // Debug
+  console.log(
+    "Token being sent:",
+    token ? token.substring(0, 50) + "..." : "NO TOKEN"
+  ); // Debug
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

@@ -20,7 +20,7 @@ import {
   AllUsersTable,
   RejectModal,
   PendingMemberDetailModal,
-} from "../../components/PendingMembers";
+} from "../../components/adminComponents/PendingMembers";
 
 const PendingMemberPage = () => {
   const [pendingAccounts, setPendingAccounts] = useState([]);

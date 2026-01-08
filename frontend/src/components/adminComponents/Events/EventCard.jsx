@@ -10,7 +10,7 @@ import {
   Bell,
   Repeat,
 } from "lucide-react";
-import { EVENT_TYPES } from "../../Api/eventApi";
+import { EVENT_TYPES } from "../../../Api/eventApi";
 
 // Format date helper
 const formatDate = (dateString) => {
@@ -115,7 +115,9 @@ const EventCard = ({ event, onEdit, onDelete, onView, isAdmin = true }) => {
 
   return (
     <div
-      className={`relative rounded-2xl border-2 ${colors.border} ${colors.bg} p-5 
+      className={`relative rounded-2xl border-2 ${colors.border} ${
+        colors.bg
+      } p-5 
         hover:shadow-lg transition-all duration-300 group ${
           past ? "opacity-60" : ""
         }`}
