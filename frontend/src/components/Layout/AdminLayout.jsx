@@ -11,7 +11,6 @@ const AdminLayout = () => {
   console.log("Token:", token);
   console.log("User:", user);
   console.log("Role ID:", user?.profile?.role_id);
-
   // Chưa đăng nhập
   if (!token) {
     return <Navigate to="/login" replace />;

@@ -322,3 +322,37 @@ CREATE TABLE renovation_logs (
 
 -- Xóa constraint hoàn toàn (đơn giản nhất)
 ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profile_link_check;
+-- ...existing code...
+
+-- ==========================================
+-- 16. POSTS (Bài viết/Tin tức)
+-- ==========================================
+CREATE TABLE posts (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    slug VARCHAR(255) UNIQUE,
+    excerpt TEXT,
+    content TEXT NOT NULL,
+    thumbnail_url TEXT,
+    images JSONB DEFAULT '[]',
+    category TEXT DEFAULT 'other' CHECK (
+        category IN ('news', 'history', 'announcement', 'story', 'other')
+    ),
+    status TEXT DEFAULT 'draft' CHECK (
+        status IN ('draft', 'pending', 'published', 'rejected')
+    ),
+    is_featured BOOLEAN DEFAULT false,
+    view_count INTEGER DEFAULT 0,
+    author_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+    approved_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
+    approved_at TIMESTAMP WITH TIME ZONE,
+    reject_reason TEXT,
+    published_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_posts_status ON posts(status);
+CREATE INDEX idx_posts_category ON posts(category);
+CREATE INDEX idx_posts_author ON posts(author_id);
+

@@ -11,6 +11,9 @@ import UserManagement from "./pages/admin/userManagent";
 import FunPage from "./pages/admin/funPage";
 import UserDashboard from "./pages/user/UserDashboard";
 import AncestralHousePage from "./pages/admin/ancestralHousePage";
+import SettingPage from "./pages/admin/settingPage";
+import PostsPage from "./pages/admin/postsPage";
+import NotificationPage from "./pages/admin/notificationPage";
 
 function App() {
   return (
@@ -33,6 +36,10 @@ function App() {
           <Route path="members" element={<UserManagement />} />
           <Route path="funds" element={<FunPage />} />
           <Route path="ancestral-house" element={<AncestralHousePage />} />
+          <Route path="posts" element={<PostsPage />} />
+          <Route path="notifications" element={<NotificationPage />} />
+          <Route path="settings" element={<SettingPage />} />
+
           {/* Thêm các route admin khác tại đây */}
         </Route>
         {/* 4. USER DASHBOARD */}
