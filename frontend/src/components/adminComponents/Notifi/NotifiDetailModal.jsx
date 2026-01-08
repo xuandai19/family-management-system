@@ -13,9 +13,21 @@ import {
 
 const NOTIFI_TYPES = {
   event: { label: "Sự kiện", icon: Bell, color: "text-blue-600 bg-blue-100" },
-  request: { label: "Yêu cầu", icon: AlertTriangle, color: "text-amber-600 bg-amber-100" },
-  system: { label: "Hệ thống", icon: Bell, color: "text-purple-600 bg-purple-100" },
-  reminder: { label: "Nhắc nhở", icon: Clock, color: "text-green-600 bg-green-100" },
+  request: {
+    label: "Yêu cầu",
+    icon: AlertTriangle,
+    color: "text-amber-600 bg-amber-100",
+  },
+  system: {
+    label: "Hệ thống",
+    icon: Bell,
+    color: "text-purple-600 bg-purple-100",
+  },
+  reminder: {
+    label: "Nhắc nhở",
+    icon: Clock,
+    color: "text-green-600 bg-green-100",
+  },
 };
 
 const NotifiDetailModal = ({ notification, onClose, onMarkRead, onDelete }) => {
@@ -60,7 +72,9 @@ const NotifiDetailModal = ({ notification, onClose, onMarkRead, onDelete }) => {
               <TypeIcon size={20} />
             </div>
             <div>
-              <h2 className="font-semibold text-gray-900">Chi tiết thông báo</h2>
+              <h2 className="font-semibold text-gray-900">
+                Chi tiết thông báo
+              </h2>
               <span
                 className={`text-xs px-2 py-0.5 rounded ${
                   NOTIFI_TYPES[notification.type]?.color || "bg-gray-100"

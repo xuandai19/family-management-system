@@ -12,9 +12,21 @@ import {
 
 const NOTIFI_TYPES = {
   event: { label: "Sự kiện", icon: Bell, color: "text-blue-600 bg-blue-50" },
-  request: { label: "Yêu cầu", icon: AlertTriangle, color: "text-amber-600 bg-amber-50" },
-  system: { label: "Hệ thống", icon: Bell, color: "text-purple-600 bg-purple-50" },
-  reminder: { label: "Nhắc nhở", icon: Clock, color: "text-green-600 bg-green-50" },
+  request: {
+    label: "Yêu cầu",
+    icon: AlertTriangle,
+    color: "text-amber-600 bg-amber-50",
+  },
+  system: {
+    label: "Hệ thống",
+    icon: Bell,
+    color: "text-purple-600 bg-purple-50",
+  },
+  reminder: {
+    label: "Nhắc nhở",
+    icon: Clock,
+    color: "text-green-600 bg-green-50",
+  },
 };
 
 const NotifiItem = ({ notification, onMarkRead, onDelete, onViewDetail }) => {
@@ -52,7 +64,9 @@ const NotifiItem = ({ notification, onMarkRead, onDelete, onViewDetail }) => {
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <h3 className="font-medium text-gray-900">{notification.title}</h3>
+                <h3 className="font-medium text-gray-900">
+                  {notification.title}
+                </h3>
                 {!notification.is_read && (
                   <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
                 )}

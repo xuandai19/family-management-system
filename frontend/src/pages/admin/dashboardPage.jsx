@@ -41,13 +41,14 @@ const Dashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const [statsRes, pendingRes, eventsRes, activitiesRes] = await Promise.all([
-        getDashboardStats(),
-        getRecentPending(),
-        getUpcomingEvents(),
-        getRecentActivities(),
-      ]);
-      
+      const [statsRes, pendingRes, eventsRes, activitiesRes] =
+        await Promise.all([
+          getDashboardStats(),
+          getRecentPending(),
+          getUpcomingEvents(),
+          getRecentActivities(),
+        ]);
+
       if (statsRes.success) setStats(statsRes.data);
       if (pendingRes.success) setPendingRequests(pendingRes.data || []);
       if (eventsRes.success) setUpcomingEvents(eventsRes.data || []);
@@ -166,16 +167,30 @@ const Dashboard = () => {
                   {stat.change && (
                     <span
                       className={`text-xs font-medium mt-2 inline-block px-2 py-1 rounded-full
-                        ${stat.changeType === "increase" ? "bg-green-100 text-green-600" : ""}
-                        ${stat.changeType === "new" ? "bg-orange-100 text-orange-600" : ""}
-                        ${stat.changeType === "info" ? "bg-blue-100 text-blue-600" : ""}
+                        ${
+                          stat.changeType === "increase"
+                            ? "bg-green-100 text-green-600"
+                            : ""
+                        }
+                        ${
+                          stat.changeType === "new"
+                            ? "bg-orange-100 text-orange-600"
+                            : ""
+                        }
+                        ${
+                          stat.changeType === "info"
+                            ? "bg-blue-100 text-blue-600"
+                            : ""
+                        }
                       `}
                     >
                       {stat.change}
                     </span>
                   )}
                 </div>
-                <div className={`w-14 h-14 ${stat.color} rounded-2xl flex items-center justify-center`}>
+                <div
+                  className={`w-14 h-14 ${stat.color} rounded-2xl flex items-center justify-center`}
+                >
                   <Icon size={28} className="text-white" />
                 </div>
               </div>
@@ -189,7 +204,9 @@ const Dashboard = () => {
         {/* Yêu cầu chờ duyệt */}
         <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm">
           <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-slate-800">Yêu cầu chờ duyệt</h2>
+            <h2 className="text-lg font-bold text-slate-800">
+              Yêu cầu chờ duyệt
+            </h2>
             <button
               onClick={() => navigate("/admin/pending-members")}
               className="text-[#d4a843] hover:text-[#8B6914] text-sm font-medium flex items-center gap-1"
@@ -199,7 +216,9 @@ const Dashboard = () => {
           </div>
           <div className="p-6">
             {pendingRequests.length === 0 ? (
-              <p className="text-slate-500 text-center py-8">Không có yêu cầu nào</p>
+              <p className="text-slate-500 text-center py-8">
+                Không có yêu cầu nào
+              </p>
             ) : (
               <div className="space-y-4">
                 {pendingRequests.map((req) => (
@@ -222,8 +241,12 @@ const Dashboard = () => {
                         </div>
                       )}
                       <div>
-                        <p className="font-medium text-slate-800">{req.full_name}</p>
-                        <p className="text-sm text-slate-500">{formatDate(req.created_at)}</p>
+                        <p className="font-medium text-slate-800">
+                          {req.full_name}
+                        </p>
+                        <p className="text-sm text-slate-500">
+                          {formatDate(req.created_at)}
+                        </p>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -244,7 +267,9 @@ const Dashboard = () => {
         {/* Sự kiện sắp tới */}
         <div className="bg-white rounded-2xl shadow-sm">
           <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-slate-800">Sự kiện sắp tới</h2>
+            <h2 className="text-lg font-bold text-slate-800">
+              Sự kiện sắp tới
+            </h2>
             <button
               onClick={() => navigate("/admin/events")}
               className="text-[#d4a843] hover:text-[#8B6914] text-sm font-medium flex items-center gap-1"
@@ -254,19 +279,29 @@ const Dashboard = () => {
           </div>
           <div className="p-6 space-y-4">
             {upcomingEvents.length === 0 ? (
-              <p className="text-slate-500 text-center py-4">Không có sự kiện</p>
+              <p className="text-slate-500 text-center py-4">
+                Không có sự kiện
+              </p>
             ) : (
               upcomingEvents.map((event) => (
                 <div
                   key={event.id}
                   className="flex items-start gap-4 p-3 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer"
                 >
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${getEventTypeStyle(event.event_type)}`}>
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${getEventTypeStyle(
+                      event.event_type
+                    )}`}
+                  >
                     <Calendar size={20} />
                   </div>
                   <div>
-                    <p className="font-medium text-slate-800 text-sm">{event.title}</p>
-                    <p className="text-xs text-slate-500 mt-1">{formatDate(event.event_date)}</p>
+                    <p className="font-medium text-slate-800 text-sm">
+                      {event.title}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      {formatDate(event.event_date)}
+                    </p>
                   </div>
                 </div>
               ))
@@ -280,11 +315,15 @@ const Dashboard = () => {
         {/* Hoạt động gần đây */}
         <div className="bg-white rounded-2xl shadow-sm">
           <div className="p-6 border-b border-slate-100">
-            <h2 className="text-lg font-bold text-slate-800">Hoạt động gần đây</h2>
+            <h2 className="text-lg font-bold text-slate-800">
+              Hoạt động gần đây
+            </h2>
           </div>
           <div className="p-6 space-y-4">
             {recentActivities.length === 0 ? (
-              <p className="text-slate-500 text-center py-4">Chưa có hoạt động</p>
+              <p className="text-slate-500 text-center py-4">
+                Chưa có hoạt động
+              </p>
             ) : (
               recentActivities.slice(0, 5).map((activity) => (
                 <div key={activity.id} className="flex items-center gap-4">

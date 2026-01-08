@@ -37,7 +37,8 @@ export const getDashboardStats = async (req, res) => {
     const { data: funds } = await supabaseAdmin
       .from("funds")
       .select("current_balance");
-    const totalFund = funds?.reduce((sum, f) => sum + (f.current_balance || 0), 0) || 0;
+    const totalFund =
+      funds?.reduce((sum, f) => sum + (f.current_balance || 0), 0) || 0;
 
     // 6. Tổng thu/chi tháng này
     const startOfMonth = new Date(
@@ -57,12 +58,14 @@ export const getDashboardStats = async (req, res) => {
       .gte("transaction_date", startOfMonth)
       .lte("transaction_date", endOfMonth);
 
-    const monthIncome = monthTransactions
-      ?.filter((t) => t.type === "income")
-      .reduce((sum, t) => sum + (t.amount || 0), 0) || 0;
-    const monthExpense = monthTransactions
-      ?.filter((t) => t.type === "expense")
-      .reduce((sum, t) => sum + (t.amount || 0), 0) || 0;
+    const monthIncome =
+      monthTransactions
+        ?.filter((t) => t.type === "income")
+        .reduce((sum, t) => sum + (t.amount || 0), 0) || 0;
+    const monthExpense =
+      monthTransactions
+        ?.filter((t) => t.type === "expense")
+        .reduce((sum, t) => sum + (t.amount || 0), 0) || 0;
 
     res.json({
       success: true,
@@ -95,10 +98,11 @@ export const getRecentPendingRequests = async (req, res) => {
     if (error) throw error;
 
     // Map username to full_name for frontend compatibility
-    const mappedData = data?.map(p => ({
-      ...p,
-      full_name: p.username
-    })) || [];
+    const mappedData =
+      data?.map((p) => ({
+        ...p,
+        full_name: p.username,
+      })) || [];
 
     res.json({ success: true, data: mappedData });
   } catch (error) {
@@ -134,28 +138,31 @@ export const getRecentActivities = async (req, res) => {
     // Lấy thông báo gần đây làm hoạt động
     const { data, error } = await supabaseAdmin
       .from("notifications")
-      .select(`
+      .select(
+        `
         id,
         title,
         message,
         type,
         created_at,
         user:profiles!notifications_user_id_fkey(username)
-      `)
+      `
+      )
       .order("created_at", { ascending: false })
       .limit(10);
 
     if (error) throw error;
 
     // Format thành activities
-    const activities = data?.map((n) => ({
-      id: n.id,
-      action: n.title,
-      description: n.message,
-      type: n.type,
-      user: n.user?.username || "Hệ thống",
-      time: n.created_at,
-    })) || [];
+    const activities =
+      data?.map((n) => ({
+        id: n.id,
+        action: n.title,
+        description: n.message,
+        type: n.type,
+        user: n.user?.username || "Hệ thống",
+        time: n.created_at,
+      })) || [];
 
     res.json({ success: true, data: activities });
   } catch (error) {

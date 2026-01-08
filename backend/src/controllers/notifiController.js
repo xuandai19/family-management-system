@@ -7,10 +7,12 @@ export const getAllNotifications = async (req, res) => {
 
     let query = supabase
       .from("notifications")
-      .select(`
+      .select(
+        `
         *,
         user:profiles!user_id(id, username, avatar_url, email)
-      `)
+      `
+      )
       .order("created_at", { ascending: false });
 
     if (type) {
@@ -35,10 +37,12 @@ export const getUnreadNotifications = async (req, res) => {
   try {
     const { data, error } = await supabase
       .from("notifications")
-      .select(`
+      .select(
+        `
         *,
         user:profiles!user_id(id, username, avatar_url, email)
-      `)
+      `
+      )
       .eq("is_read", false)
       .order("created_at", { ascending: false });
 
@@ -65,13 +69,15 @@ export const createNotification = async (req, res) => {
 
     const { data, error } = await supabase
       .from("notifications")
-      .insert([{
-        title,
-        message,
-        type: type || "request",
-        user_id,
-        is_read: false,
-      }])
+      .insert([
+        {
+          title,
+          message,
+          type: type || "request",
+          user_id,
+          is_read: false,
+        },
+      ])
       .select()
       .single();
 
@@ -128,7 +134,10 @@ export const deleteNotification = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const { error } = await supabase.from("notifications").delete().eq("id", id);
+    const { error } = await supabase
+      .from("notifications")
+      .delete()
+      .eq("id", id);
 
     if (error) throw error;
 
