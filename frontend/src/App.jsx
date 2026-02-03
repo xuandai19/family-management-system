@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import LoginForm from "./pages/Auth/LoginForm";
 import RegisterForm from "./pages/Auth/RegisterForm";
 import AdminLayout from "./components/Layout/AdminLayout";
+import UserLayout from "./components/Layout/UserLayout";
 import AdminDashboard from "./pages/admin/dashboardPage";
 import FamilyTree from "./pages/admin/familyTreePage";
 import PendingMembers from "./pages/admin/pendingMemberPage";
@@ -14,6 +15,15 @@ import AncestralHousePage from "./pages/admin/ancestralHousePage";
 import SettingPage from "./pages/admin/settingPage";
 import PostsPage from "./pages/admin/postsPage";
 import NotificationPage from "./pages/admin/notificationPage";
+
+// User Pages
+import UserFamilyTreePage from "./pages/user/UserFamilyTreePage";
+import UserFundNotificationsPage from "./pages/user/UserFundNotificationsPage";
+import UserPaymentHistoryPage from "./pages/user/UserPaymentHistoryPage";
+import UserFundReportPage from "./pages/user/UserFundReportPage";
+import UserAncestralHousePage from "./pages/user/UserAncestralHousePage";
+import UserProfilePage from "./pages/user/UserProfilePage";
+import UserAddChildRequestPage from "./pages/user/UserAddChildRequestPage";
 
 function App() {
   return (
@@ -42,8 +52,26 @@ function App() {
 
           {/* Thêm các route admin khác tại đây */}
         </Route>
-        {/* 4. USER DASHBOARD */}
-        <Route path="/UserDashboard" element={<UserDashboard />} />
+
+        {/* 4. USER - Sử dụng UserLayout */}
+        <Route path="/user" element={<UserLayout />}>
+          <Route index element={<Navigate to="/user/dashboard" />} />
+          <Route path="dashboard" element={<UserDashboard />} />
+          <Route path="family-tree" element={<UserFamilyTreePage />} />
+          <Route
+            path="fund-notifications"
+            element={<UserFundNotificationsPage />}
+          />
+          <Route path="payment-history" element={<UserPaymentHistoryPage />} />
+          <Route path="fund-report" element={<UserFundReportPage />} />
+          <Route path="ancestral-house" element={<UserAncestralHousePage />} />
+          <Route path="profile" element={<UserProfilePage />} />
+          <Route
+            path="add-child-request"
+            element={<UserAddChildRequestPage />}
+          />
+        </Route>
+
         {/* 5. KHÔNG TÌM THẤY TRANG */}
         <Route path="*" element={<div>404 Not Found</div>} />
       </Routes>

@@ -37,8 +37,8 @@ const LoginForm = () => {
         if (roleId === 1 || roleId === "1") {
           navigate("/admin/dashboard");
         } else {
-          // Các role khác - tạm thời về login (chưa có trang user)
-          navigate("/UserDashboard");
+          // Các role khác - vào trang user
+          navigate("/user/dashboard");
         }
       }
     } catch (err) {
