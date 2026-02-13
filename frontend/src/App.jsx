@@ -1,29 +1,46 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+
+// Auth Pages
 import LoginForm from "./pages/Auth/LoginForm";
 import RegisterForm from "./pages/Auth/RegisterForm";
-import AdminLayout from "./components/Layout/AdminLayout";
-import UserLayout from "./components/Layout/UserLayout";
+
+// Layouts
+import AdminLayout from "./components/admin/layout/AdminLayout";
+import MemberLayout from "./components/member/layout/MemberLayout";
+
+// Admin Pages
 import AdminDashboard from "./pages/admin/dashboardPage";
 import FamilyTree from "./pages/admin/familyTreePage";
 import PendingMembers from "./pages/admin/pendingMemberPage";
 import Event from "./pages/admin/eventPage";
 import UserManagement from "./pages/admin/userManagent";
 import FunPage from "./pages/admin/funPage";
-import UserDashboard from "./pages/user/UserDashboard";
 import AncestralHousePage from "./pages/admin/ancestralHousePage";
 import SettingPage from "./pages/admin/settingPage";
 import PostsPage from "./pages/admin/postsPage";
 import NotificationPage from "./pages/admin/notificationPage";
 
-// User Pages
-import UserFamilyTreePage from "./pages/user/UserFamilyTreePage";
-import UserFundNotificationsPage from "./pages/user/UserFundNotificationsPage";
-import UserPaymentHistoryPage from "./pages/user/UserPaymentHistoryPage";
-import UserFundReportPage from "./pages/user/UserFundReportPage";
-import UserAncestralHousePage from "./pages/user/UserAncestralHousePage";
-import UserProfilePage from "./pages/user/UserProfilePage";
-import UserAddChildRequestPage from "./pages/user/UserAddChildRequestPage";
+// Member Pages
+import MemberDashboard from "./pages/member/UserDashboard";
+import MemberFamilyTreePage from "./pages/member/UserFamilyTreePage";
+import MemberFundNotificationsPage from "./pages/member/UserFundNotificationsPage";
+import MemberPaymentHistoryPage from "./pages/member/UserPaymentHistoryPage";
+import MemberFundReportPage from "./pages/member/UserFundReportPage";
+import MemberAncestralHousePage from "./pages/member/UserAncestralHousePage";
+import MemberProfilePage from "./pages/member/UserProfilePage";
+import MemberAddChildRequestPage from "./pages/member/UserAddChildRequestPage";
+
+// New Member Pages - Events
+import MemberEventsPage from "./pages/member/UserEventsPage";
+import MemberProposeEventPage from "./pages/member/UserProposeEventPage";
+
+// New Member Pages - Finance
+import MemberProposeExpensePage from "./pages/member/UserProposeExpensePage";
+
+// New Member Pages - Posts
+import MemberPostsPage from "./pages/member/UserPostsPage";
+import MemberProposePostPage from "./pages/member/UserProposePostPage";
 
 function App() {
   return (
@@ -53,23 +70,32 @@ function App() {
           {/* Thêm các route admin khác tại đây */}
         </Route>
 
-        {/* 4. USER - Sử dụng UserLayout */}
-        <Route path="/user" element={<UserLayout />}>
-          <Route index element={<Navigate to="/user/dashboard" />} />
-          <Route path="dashboard" element={<UserDashboard />} />
-          <Route path="family-tree" element={<UserFamilyTreePage />} />
-          <Route
-            path="fund-notifications"
-            element={<UserFundNotificationsPage />}
-          />
-          <Route path="payment-history" element={<UserPaymentHistoryPage />} />
-          <Route path="fund-report" element={<UserFundReportPage />} />
-          <Route path="ancestral-house" element={<UserAncestralHousePage />} />
-          <Route path="profile" element={<UserProfilePage />} />
-          <Route
-            path="add-child-request"
-            element={<UserAddChildRequestPage />}
-          />
+        {/* 4. MEMBER - Sử dụng MemberLayout */}
+        <Route path="/member" element={<MemberLayout />}>
+          <Route index element={<Navigate to="/member/dashboard" />} />
+          <Route path="dashboard" element={<MemberDashboard />} />
+          <Route path="family-tree" element={<MemberFamilyTreePage />} />
+          
+          {/* Events */}
+          <Route path="events" element={<MemberEventsPage />} />
+          <Route path="propose-event" element={<MemberProposeEventPage />} />
+          
+          {/* Fund & Finance */}
+          <Route path="fund-notifications" element={<MemberFundNotificationsPage />} />
+          <Route path="payment-history" element={<MemberPaymentHistoryPage />} />
+          <Route path="fund-report" element={<MemberFundReportPage />} />
+          <Route path="propose-expense" element={<MemberProposeExpensePage />} />
+          
+          {/* Ancestral House */}
+          <Route path="ancestral-house" element={<MemberAncestralHousePage />} />
+          
+          {/* Posts */}
+          <Route path="posts" element={<MemberPostsPage />} />
+          <Route path="propose-post" element={<MemberProposePostPage />} />
+          
+          {/* Profile & Others */}
+          <Route path="profile" element={<MemberProfilePage />} />
+          <Route path="add-child-request" element={<MemberAddChildRequestPage />} />
         </Route>
 
         {/* 5. KHÔNG TÌM THẤY TRANG */}

@@ -1,347 +1,276 @@
-# 🏠 Family Management System (Hệ Thống Quản Lý Gia Phả)
+# 🏠 Hệ Thống Quản Lý Gia Phả (Family Management System)
 
-Hệ thống quản lý gia phả dòng họ toàn diện, giúp lưu trữ, quản lý thông tin thành viên, sự kiện, quỹ gia đình và nhiều tính năng khác.
+Hệ thống quản lý gia phả trực tuyến, hỗ trợ quản lý thông tin dòng họ, cây gia phả, quỹ dòng họ, sự kiện và nhiều chức năng khác.
 
 ## 📋 Mục Lục
 
-- [Tổng Quan](#tổng-quan)
-- [Kiến Trúc Hệ Thống](#kiến-trúc-hệ-thống)
-- [Các Chức Năng Chính](#các-chức-năng-chính)
-- [Cấu Trúc Database](#cấu-trúc-database)
-- [Cài Đặt & Chạy](#cài-đặt--chạy)
+- [Tổng Quan](#-tổng-quan)
+- [Công Nghệ Sử Dụng](#-công-nghệ-sử-dụng)
+- [Cấu Trúc Dự Án](#-cấu-trúc-dự-án)
+- [Chức Năng Hệ Thống](#-chức-năng-hệ-thống)
+- [Cài Đặt](#-cài-đặt)
+- [API Endpoints](#-api-endpoints)
 
 ---
 
 ## 🎯 Tổng Quan
 
-Dự án bao gồm 3 phần chính:
+Hệ thống được thiết kế với 2 vai trò chính:
 
-| Thành phần   | Công nghệ                  | Mô tả                             |
-| ------------ | -------------------------- | --------------------------------- |
-| **Frontend** | React + Vite + TailwindCSS | Giao diện người dùng chính        |
-| **Backend**  | Node.js + Express          | API Server                        |
-| **Database** | Supabase (PostgreSQL)      | Lưu trữ dữ liệu                   |
-| **Auth UI**  | React + Vite               | Giao diện đăng nhập/đăng ký riêng |
+- **Admin**: Quản trị viên dòng họ - có toàn quyền quản lý
+- **Member**: Thành viên dòng họ - xem thông tin và đề xuất
 
 ---
 
-## 🏗️ Kiến Trúc Hệ Thống
+## 🛠 Công Nghệ Sử Dụng
+
+### Frontend
+
+- **React 18** + **Vite** - Framework & Build tool
+- **React Router v6** - Điều hướng
+- **Tailwind CSS** - Styling
+- **Lucide React** - Icons
+- **React Flow** - Hiển thị cây gia phả
+
+### Backend
+
+- **Node.js** + **Express.js** - Server
+- **Supabase** - Database (PostgreSQL) & Authentication
+- **JWT** - Xác thực token
+
+---
+
+## 📁 Cấu Trúc Dự Án
 
 ```
 family-management-system/
-├── auth-ui/          # Giao diện xác thực (Login/Register)
-├── backend/          # API Server (Express.js)
+├── frontend/                 # React Frontend
 │   ├── src/
-│   │   ├── controllers/    # Xử lý logic nghiệp vụ
-│   │   ├── routes/         # Định tuyến API
-│   │   ├── middlewares/    # Xác thực & phân quyền
-│   │   └── config/         # Cấu hình Supabase
+│   │   ├── components/       # Components tái sử dụng
+│   │   │   ├── adminComponents/   # Components cho Admin
+│   │   │   └── member/            # Components cho Member
+│   │   ├── pages/
+│   │   │   ├── admin/        # Trang Admin
+│   │   │   ├── member/       # Trang Member
+│   │   │   └── Auth/         # Trang đăng nhập/đăng ký
+│   │   └── services/         # API services
+│   └── ...
+│
+├── backend/                  # Express Backend
+│   ├── src/
+│   │   ├── controllers/
+│   │   │   ├── admin/        # Controllers cho Admin
+│   │   │   ├── member/       # Controllers cho Member
+│   │   │   └── common/       # Controllers dùng chung
+│   │   ├── routes/
+│   │   │   ├── admin/        # Routes Admin
+│   │   │   ├── member/       # Routes Member
+│   │   │   └── common/       # Routes dùng chung
+│   │   ├── middlewares/      # Auth & Role middlewares
+│   │   └── config/           # Supabase config
 │   └── supabase/
-│       └── migrations/     # Database migrations
-└── frontend/         # Giao diện chính (React + Vite)
-    └── src/
-        ├── components/     # Components tái sử dụng
-        ├── pages/          # Các trang (admin/user)
-        └── Api/            # Gọi API
+│       └── migrations/       # Database migrations
+│
+└── auth-ui/                  # Auth UI riêng (nếu cần)
 ```
 
 ---
 
-## ⚙️ Các Chức Năng Chính
+## ⚙️ Chức Năng Hệ Thống
 
-### 1. 🔐 Xác Thực & Phân Quyền (Authentication & Authorization)
+### 🔐 1. Xác Thực (Authentication)
 
-| Chức năng | Mô tả                                    | Endpoint                  |
-| --------- | ---------------------------------------- | ------------------------- |
-| Đăng ký   | Người dùng đăng ký tài khoản (chờ duyệt) | `POST /api/auth/register` |
-| Đăng nhập | Xác thực và nhận JWT token               | `POST /api/auth/login`    |
-
-**Phân quyền (Roles):**
-
-- `admin` - Quản trị viên (toàn quyền)
-- `member` - Thành viên gia đình (đã được duyệt)
-- `guest` - Khách (mặc định khi đăng ký)
+| Chức năng         | Mô tả                                          |
+| ----------------- | ---------------------------------------------- |
+| Đăng ký tài khoản | Đăng ký với thông tin cá nhân, chờ Admin duyệt |
+| Đăng nhập         | Đăng nhập bằng email/password                  |
+| Phân quyền        | Admin / Member / Guest                         |
+| Đổi mật khẩu      | Thay đổi mật khẩu tài khoản                    |
 
 ---
 
-### 2. 👥 Quản Lý Thành Viên Gia Phả (Family Members)
+### 👨‍💼 2. Chức Năng ADMIN
 
-| Chức năng               | Mô tả                            | Quyền  |
-| ----------------------- | -------------------------------- | ------ |
-| Xem cây gia phả         | Hiển thị cây gia phả trực quan   | Public |
-| Tìm kiếm thành viên     | Tìm theo tên, thông tin          | Public |
-| Xem chi tiết thành viên | Thông tin đầy đủ của thành viên  | Public |
-| Thêm thành viên         | Tạo thành viên mới trong gia phả | Admin  |
-| Sửa thông tin           | Cập nhật thông tin thành viên    | Admin  |
-| Xóa thành viên          | Xóa khỏi gia phả                 | Admin  |
+#### 📊 2.1. Dashboard
 
-**Thông tin thành viên bao gồm:**
+- Thống kê tổng quan: số thành viên, sự kiện, quỹ
+- Biểu đồ thu chi
+- Sự kiện sắp tới
+- Thành viên mới đăng ký
 
-- Họ tên, giới tính, ngày sinh/mất
-- Quan hệ cha/mẹ (father_id, mother_id)
-- Thế hệ (generation_level)
-- Liên hệ: SĐT, email, địa chỉ
-- Nghề nghiệp, quê quán, nơi sinh
-- Ảnh đại diện, tiểu sử
+#### 👥 2.2. Quản Lý Thành Viên Gia Phả
 
----
+| Chức năng         | Mô tả                                    |
+| ----------------- | ---------------------------------------- |
+| Xem danh sách     | Hiển thị tất cả thành viên trong dòng họ |
+| Thêm thành viên   | Thêm người mới vào gia phả (huyết thống) |
+| Sửa thông tin     | Cập nhật thông tin cá nhân               |
+| Xóa thành viên    | Xóa khỏi gia phả                         |
+| Quản lý vợ/chồng  | Thêm/sửa/xóa thông tin vợ/chồng          |
+| Thiết lập quan hệ | Cha-mẹ-con, vợ-chồng                     |
 
-### 3. 💑 Quản Lý Vợ/Chồng (Spouses)
+#### 🌳 2.3. Cây Gia Phả
 
-| Chức năng              | Mô tả                         | Quyền |
-| ---------------------- | ----------------------------- | ----- |
-| Xem danh sách vợ/chồng | Danh sách người ngoài dòng họ | Admin |
-| Thêm vợ/chồng          | Thêm vợ/chồng cho thành viên  | Admin |
-| Cập nhật thông tin     | Sửa thông tin vợ/chồng        | Admin |
-| Xóa vợ/chồng           | Xóa khỏi hệ thống             | Admin |
+- Hiển thị cây gia phả đồ họa (React Flow)
+- Zoom, pan, navigate
+- Xem chi tiết từng thành viên
+- Tìm kiếm trong cây
 
-**Quan hệ hôn nhân (Marriages):**
+#### ✅ 2.4. Duyệt Thành Viên Đăng Ký
 
-- Liên kết member với spouse
-- Trạng thái: `married`, `divorced`, `widowed`
-- Ngày cưới, nơi cưới, ghi chú
+| Chức năng         | Mô tả                             |
+| ----------------- | --------------------------------- |
+| Xem danh sách chờ | Các đơn đăng ký pending           |
+| Duyệt đơn         | Phê duyệt và liên kết với gia phả |
+| Từ chối đơn       | Từ chối với lý do                 |
+| Xem lịch sử       | Đơn đã xử lý                      |
 
----
+#### 📅 2.5. Quản Lý Sự Kiện
 
-### 4. ✅ Quản Lý Yêu Cầu Đăng Ký (Pending Requests)
+| Chức năng       | Mô tả                                |
+| --------------- | ------------------------------------ |
+| Tạo sự kiện     | Đám cưới, giỗ, họp mặt, sinh nhật... |
+| Sửa/Xóa sự kiện | Cập nhật hoặc hủy bỏ                 |
+| Lịch sự kiện    | Xem theo tháng/năm                   |
+| Nhắc nhở        | Cài đặt ngày nhắc trước sự kiện      |
 
-| Chức năng               | Mô tả                              | Quyền |
-| ----------------------- | ---------------------------------- | ----- |
-| Xem danh sách chờ duyệt | Các tài khoản pending              | Admin |
-| Duyệt đăng ký Member    | Liên kết profile với family_member | Admin |
-| Duyệt đăng ký Spouse    | Liên kết profile với spouse        | Admin |
-| Từ chối đăng ký         | Reject yêu cầu với lý do           | Admin |
+#### 💰 2.6. Quản Lý Quỹ
 
-**Quy trình đăng ký:**
+| Chức năng | Mô tả                           |
+| --------- | ------------------------------- |
+| Tạo quỹ   | Quỹ xây dựng, quỹ từ thiện...   |
+| Ghi thu   | Ghi nhận đóng góp               |
+| Ghi chi   | Ghi nhận chi tiêu               |
+| Báo cáo   | Thống kê thu chi theo thời gian |
 
-1. User đăng ký → `status = 'pending'`
-2. Admin duyệt → liên kết với `member_id` hoặc `spouse_id`
-3. User có quyền `member` sau khi được duyệt
+#### 💵 2.7. Quản Lý Đợt Thu Quỹ
 
----
+| Chức năng   | Mô tả                      |
+| ----------- | -------------------------- |
+| Tạo đợt thu | Thông báo đóng quỹ định kỳ |
+| Theo dõi    | Xem ai đã đóng/chưa đóng   |
+| Ghi nhận    | Cập nhật trạng thái đóng   |
+| Đóng đợt    | Kết thúc đợt thu           |
 
-### 5. 📅 Quản Lý Sự Kiện (Events)
+#### 🏛 2.8. Quản Lý Từ Đường
 
-| Chức năng             | Mô tả              | Quyền   |
-| --------------------- | ------------------ | ------- |
-| Xem danh sách sự kiện | Tất cả sự kiện     | Member+ |
-| Xem sự kiện sắp tới   | Upcoming events    | Member+ |
-| Xem chi tiết sự kiện  | Thông tin chi tiết | Member+ |
-| Tạo sự kiện           | Thêm sự kiện mới   | Admin   |
-| Sửa sự kiện           | Cập nhật thông tin | Admin   |
-| Xóa sự kiện           | Xóa sự kiện        | Admin   |
+| Chức năng          | Mô tả                     |
+| ------------------ | ------------------------- |
+| Thông tin từ đường | Tên, địa chỉ, lịch sử     |
+| Hình ảnh           | Upload ảnh từ đường       |
+| Lịch sử tu bổ      | Ghi nhận các lần sửa chữa |
 
-**Loại sự kiện (event_type):**
+#### 📝 2.9. Quản Lý Bài Viết
 
-- `wedding` - Đám cưới
-- `funeral` - Tang lễ
-- `anniversary` - Kỷ niệm
-- `reunion` - Họp mặt
-- `worship` - Giỗ/Cúng
-- `birthday` - Sinh nhật
-- `other` - Khác
+| Chức năng    | Mô tả                       |
+| ------------ | --------------------------- |
+| Tạo bài viết | Tin tức, lịch sử, thông báo |
+| Duyệt bài    | Phê duyệt bài từ member     |
+| Xuất bản     | Đăng bài lên hệ thống       |
+| Ghim bài     | Đánh dấu bài nổi bật        |
 
----
+#### 🔔 2.10. Quản Lý Thông Báo
 
-### 6. 💰 Quản Lý Quỹ Gia Đình (Funds)
+| Chức năng      | Mô tả                       |
+| -------------- | --------------------------- |
+| Gửi thông báo  | Gửi đến tất cả hoặc cá nhân |
+| Loại thông báo | Sự kiện, hệ thống, nhắc nhở |
 
-| Chức năng         | Mô tả             | Quyền   |
-| ----------------- | ----------------- | ------- |
-| Xem danh sách quỹ | Tất cả các quỹ    | Member+ |
-| Tạo quỹ mới       | Lập quỹ mới       | Admin   |
-| Cập nhật quỹ      | Sửa thông tin quỹ | Admin   |
-| Xóa quỹ           | Xóa quỹ           | Admin   |
+#### 👤 2.11. Quản Lý Người Dùng
 
-**Giao dịch (Transactions):**
-| Chức năng | Mô tả | Quyền |
-|-----------|-------|-------|
-| Xem lịch sử giao dịch | Theo quỹ hoặc tất cả | Member+ |
-| Tạo giao dịch | Thu/Chi tiền | Admin |
-| Xóa giao dịch | Xóa giao dịch | Admin |
-
-**Loại giao dịch:**
-
-- `income` - Thu (đóng góp, quyên góp)
-- `expense` - Chi (tu sửa, sự kiện, ...)
+| Chức năng      | Mô tả                           |
+| -------------- | ------------------------------- |
+| Xem danh sách  | Tất cả tài khoản trong hệ thống |
+| Phân quyền     | Nâng/hạ quyền admin             |
+| Khóa tài khoản | Vô hiệu hóa tài khoản           |
 
 ---
 
-### 7. 📋 Quản Lý Đợt Thu Tiền (Collection Rounds)
+### 👤 3. Chức Năng MEMBER
 
-| Chức năng                  | Mô tả                     | Quyền   |
-| -------------------------- | ------------------------- | ------- |
-| Xem các đợt thu            | Danh sách đợt thu         | Member+ |
-| Xem đợt thu đang hoạt động | Active rounds             | Member+ |
-| Thống kê đợt thu           | Số người đã đóng, còn lại | Member+ |
-| Tạo đợt thu                | Lập đợt thu mới           | Admin   |
-| Cập nhật đợt thu           | Sửa thông tin             | Admin   |
-| Xóa đợt thu                | Xóa đợt thu               | Admin   |
-| Xác nhận thanh toán        | Ghi nhận người đã đóng    | Admin   |
-| Xóa thanh toán             | Xóa ghi nhận              | Admin   |
+#### 🏠 3.1. Dashboard
 
-**Thông tin đợt thu:**
+- Thông tin cá nhân
+- Sự kiện sắp tới
+- Thông báo mới
+- Quick links
 
-- Tên đợt thu, mô tả
-- Quỹ liên kết (fund_id)
-- Mức thu/người hoặc /hộ
-- Thời gian bắt đầu - kết thúc
-- Trạng thái: `active`, `completed`, `cancelled`
+#### 🌳 3.2. Xem Cây Gia Phả
 
----
+- Xem cây gia phả đầy đủ
+- Tìm kiếm thành viên
+- Xem chi tiết từng người
 
-### 8. 🏛️ Quản Lý Nhà Thờ Tổ (Ancestral House)
+#### 📅 3.3. Sự Kiện
 
-| Chức năng                | Mô tả                | Quyền   |
-| ------------------------ | -------------------- | ------- |
-| Xem thông tin nhà thờ tổ | Thông tin chung      | Public  |
-| Tạo/Cập nhật nhà thờ tổ  | Sửa thông tin        | Member+ |
-| Xem lịch sử tu sửa       | Danh sách renovation | Public  |
-| Thêm lịch sử tu sửa      | Ghi nhận tu sửa      | Member+ |
-| Sửa lịch sử tu sửa       | Cập nhật thông tin   | Member+ |
-| Xóa lịch sử tu sửa       | Xóa ghi nhận         | Member+ |
+| Chức năng           | Mô tả                           |
+| ------------------- | ------------------------------- |
+| Xem danh sách       | Các sự kiện của dòng họ         |
+| Xem chi tiết        | Thông tin sự kiện               |
+| Đăng ký tham gia    | Đăng ký/hủy đăng ký             |
+| **Đề xuất sự kiện** | Gửi đề xuất tổ chức sự kiện mới |
 
-**Thông tin nhà thờ tổ:**
+#### 💰 3.4. Quỹ Dòng Họ
 
-- Tên, địa chỉ, lịch sử
-- Ngày thành lập
-- Hình ảnh (JSONB array)
+| Chức năng              | Mô tả                       |
+| ---------------------- | --------------------------- |
+| Xem thông báo đóng quỹ | Các đợt thu đang mở         |
+| Xem lịch sử đóng       | Lịch sử đóng góp cá nhân    |
+| Xem báo cáo thu chi    | Báo cáo tài chính công khai |
+| **Đề xuất chi phí**    | Đề xuất khoản chi mới       |
 
----
+#### 🏛 3.5. Từ Đường
 
-### 9. 📝 Quản Lý Bài Viết/Tin Tức (Posts)
+- Xem thông tin từ đường
+- Xem hình ảnh
+- Xem lịch sử tu bổ
 
-| Chức năng                | Mô tả                    | Quyền   |
-| ------------------------ | ------------------------ | ------- |
-| Xem bài viết đã xuất bản | Tin tức công khai        | Public  |
-| Xem chi tiết bài viết    | Nội dung đầy đủ          | Public  |
-| Tạo bài viết             | Viết bài mới (chờ duyệt) | Member+ |
-| Xem tất cả bài viết      | Kể cả draft, pending     | Admin   |
-| Xem bài chờ duyệt        | Pending posts            | Admin   |
-| Sửa bài viết             | Cập nhật nội dung        | Admin   |
-| Xóa bài viết             | Xóa bài                  | Admin   |
-| Duyệt bài viết           | Approve để xuất bản      | Admin   |
-| Từ chối bài viết         | Reject với lý do         | Admin   |
+#### 📰 3.6. Bài Viết
 
-**Trạng thái bài viết:**
+| Chức năng            | Mô tả                        |
+| -------------------- | ---------------------------- |
+| Xem bài viết         | Đọc tin tức, lịch sử dòng họ |
+| Like bài viết        | Thích bài viết               |
+| **Đề xuất bài viết** | Gửi bài viết để admin duyệt  |
 
-- `draft` - Nháp
-- `pending` - Chờ duyệt
-- `published` - Đã xuất bản
-- `rejected` - Bị từ chối
+#### 👤 3.7. Thông Tin Cá Nhân
 
-**Danh mục (category):**
+| Chức năng             | Mô tả                 |
+| --------------------- | --------------------- |
+| Xem profile           | Thông tin tài khoản   |
+| Cập nhật profile      | Sửa thông tin cá nhân |
+| Đổi mật khẩu          | Thay đổi mật khẩu     |
+| Xem thông tin gia phả | Quan hệ trong dòng họ |
 
-- `news` - Tin tức
-- `history` - Lịch sử
-- `announcement` - Thông báo
-- `story` - Câu chuyện
-- `other` - Khác
+#### 👶 3.8. Đề Xuất Thêm Thành Viên
+
+- Yêu cầu thêm con/cháu vào gia phả
+- Chờ admin duyệt
 
 ---
 
-### 10. 🔔 Quản Lý Thông Báo (Notifications)
+## 🚀 Cài Đặt
 
-| Chức năng              | Mô tả                | Quyền   |
-| ---------------------- | -------------------- | ------- |
-| Tạo thông báo          | Gửi thông báo        | Member+ |
-| Xem tất cả thông báo   | Danh sách thông báo  | Admin   |
-| Xem thông báo chưa đọc | Unread notifications | Admin   |
-| Đếm thông báo chưa đọc | Count unread         | Admin   |
-| Đánh dấu đã đọc        | Mark as read         | Admin   |
-| Đánh dấu tất cả đã đọc | Mark all as read     | Admin   |
-| Xóa thông báo          | Delete notification  | Admin   |
+### Yêu Cầu
 
-**Loại thông báo:**
-
-- `event` - Sự kiện
-- `request` - Yêu cầu
-- `system` - Hệ thống
-- `reminder` - Nhắc nhở
-
----
-
-### 11. 🖼️ Upload Ảnh (Image Upload)
-
-| Chức năng        | Mô tả              | Quyền   |
-| ---------------- | ------------------ | ------- |
-| Upload 1 ảnh     | Tải lên 1 file ảnh | Member+ |
-| Upload nhiều ảnh | Tối đa 10 ảnh      | Member+ |
-| Xóa ảnh          | Xóa từ storage     | Member+ |
-
-**Giới hạn:**
-
-- Kích thước tối đa: 5MB/ảnh
-- Chỉ chấp nhận file ảnh (image/\*)
-
----
-
-### 12. 📊 Dashboard Admin
-
-| Chức năng                 | Mô tả                       | Quyền |
-| ------------------------- | --------------------------- | ----- |
-| Thống kê tổng quan        | Số thành viên, quỹ, sự kiện | Admin |
-| Yêu cầu chờ duyệt gần đây | Recent pending requests     | Admin |
-| Sự kiện sắp tới           | Upcoming events             | Admin |
-| Hoạt động gần đây         | Recent activities           | Admin |
-
----
-
-### 13. 🚨 Báo Cáo/Phản Hồi (Reports)
-
-| Chức năng           | Mô tả                | Quyền   |
-| ------------------- | -------------------- | ------- |
-| Tạo báo cáo         | Gửi phản hồi/báo lỗi | Member+ |
-| Xem tất cả báo cáo  | Danh sách báo cáo    | Admin   |
-| Xem báo cáo pending | Chưa xử lý           | Admin   |
-| Đếm báo cáo         | Count reports        | Admin   |
-| Giải quyết báo cáo  | Mark as resolved     | Admin   |
-| Bỏ qua báo cáo      | Dismiss report       | Admin   |
-| Xóa báo cáo         | Delete report        | Admin   |
-
----
-
-## 🗄️ Cấu Trúc Database
-
-### Các bảng chính:
-
-| Bảng                  | Mô tả                                      |
-| --------------------- | ------------------------------------------ |
-| `roles`               | Phân quyền (admin, member, guest)          |
-| `family_members`      | Thành viên huyết thống                     |
-| `spouses`             | Vợ/chồng (ngoài dòng họ)                   |
-| `marriages`           | Quan hệ hôn nhân                           |
-| `profiles`            | Tài khoản người dùng (liên kết auth.users) |
-| `events`              | Sự kiện gia đình                           |
-| `funds`               | Quỹ gia đình                               |
-| `transactions`        | Giao dịch thu/chi                          |
-| `collection_rounds`   | Đợt thu tiền                               |
-| `collection_payments` | Chi tiết người đã đóng                     |
-| `ancestral_house`     | Nhà thờ tổ                                 |
-| `renovation_logs`     | Lịch sử tu sửa                             |
-| `posts`               | Bài viết/tin tức                           |
-| `notifications`       | Thông báo                                  |
-| `documents`           | Tài liệu gia phả                           |
-| `update_requests`     | Yêu cầu cập nhật thông tin                 |
-
----
-
-## 🚀 Cài Đặt & Chạy
-
-### Yêu cầu:
-
-- Node.js >= 18
+- Node.js 18+
 - npm hoặc yarn
 - Supabase account
 
-### Backend:
+### Backend
 
 ```bash
 cd backend
 npm install
+
+# Tạo file .env
+cp .env.example .env
+# Điền SUPABASE_URL và SUPABASE_ANON_KEY
+
 npm run dev
 ```
 
-### Frontend:
+### Frontend
 
 ```bash
 cd frontend
@@ -349,51 +278,147 @@ npm install
 npm run dev
 ```
 
-### Auth UI:
+---
 
-```bash
-cd auth-ui
-npm install
-npm run dev
+## 📡 API Endpoints
+
+### Authentication
+
+```
+POST   /api/auth/register     # Đăng ký
+POST   /api/auth/login        # Đăng nhập
+```
+
+### Admin Routes (`/api/admin/`)
+
+```
+# Dashboard
+GET    /dashboard/stats       # Thống kê
+
+# Family Members
+GET    /family-members        # Danh sách
+POST   /family-members        # Thêm mới
+PUT    /family-members/:id    # Cập nhật
+DELETE /family-members/:id    # Xóa
+
+# Spouses
+GET    /spouses               # Danh sách vợ/chồng
+POST   /spouses               # Thêm mới
+PUT    /spouses/:id           # Cập nhật
+
+# Registration (Duyệt đơn)
+GET    /registrations/pending # Đơn chờ duyệt
+POST   /registrations/:id/approve
+POST   /registrations/:id/reject
+
+# Events
+GET    /events                # Danh sách sự kiện
+POST   /events                # Tạo sự kiện
+PUT    /events/:id            # Cập nhật
+DELETE /events/:id            # Xóa
+
+# Funds
+GET    /funds                 # Danh sách quỹ
+POST   /funds                 # Tạo quỹ
+POST   /funds/transaction     # Ghi thu/chi
+
+# Collections (Đợt thu)
+GET    /collections           # Danh sách đợt thu
+POST   /collections           # Tạo đợt thu
+PUT    /collections/:id       # Cập nhật
+
+# Ancestral House
+GET    /ancestral-house       # Thông tin từ đường
+PUT    /ancestral-house       # Cập nhật
+POST   /ancestral-house/renovation  # Thêm lịch sử tu bổ
+
+# Posts
+GET    /posts                 # Danh sách bài viết
+POST   /posts                 # Tạo bài
+PUT    /posts/:id             # Cập nhật
+POST   /posts/:id/approve     # Duyệt bài
+
+# Notifications
+GET    /notifications         # Danh sách
+POST   /notifications         # Gửi thông báo
+
+# Users
+GET    /users                 # Danh sách người dùng
+PUT    /users/:id/role        # Phân quyền
+```
+
+### Member Routes (`/api/member/`)
+
+```
+# Family
+GET    /family/tree           # Cây gia phả
+GET    /family/search         # Tìm kiếm
+
+# Events
+GET    /events                # Danh sách sự kiện
+GET    /events/upcoming       # Sự kiện sắp tới
+POST   /events/propose        # Đề xuất sự kiện
+POST   /events/:id/register   # Đăng ký tham gia
+
+# Funds
+GET    /funds/report          # Báo cáo thu chi
+GET    /funds/collections     # Thông báo đóng quỹ
+GET    /funds/my-payments     # Lịch sử đóng góp
+
+# Expenses
+POST   /expenses/propose      # Đề xuất chi phí
+GET    /expenses/my-proposals # Đề xuất của tôi
+
+# Posts
+GET    /posts                 # Bài viết đã xuất bản
+POST   /posts/propose         # Đề xuất bài viết
+POST   /posts/:id/like        # Like bài viết
+
+# Profile
+GET    /profile               # Thông tin cá nhân
+PUT    /profile               # Cập nhật
+PUT    /profile/password      # Đổi mật khẩu
 ```
 
 ---
 
-## 📱 Giao Diện
+## 📊 Database Schema
 
-### Admin Pages:
+### Bảng Chính
 
-- `/admin/dashboard` - Tổng quan
-- `/admin/family-tree` - Cây gia phả
-- `/admin/pending-members` - Duyệt thành viên
-- `/admin/events` - Quản lý sự kiện
-- `/admin/members` - Quản lý người dùng
-- `/admin/funds` - Quản lý quỹ
-- `/admin/ancestral-house` - Nhà thờ tổ
-- `/admin/posts` - Bài viết
-- `/admin/notifications` - Thông báo
-- `/admin/settings` - Cài đặt
+| Bảng              | Mô tả                             |
+| ----------------- | --------------------------------- |
+| `roles`           | Phân quyền (admin, member, guest) |
+| `family_members`  | Thành viên huyết thống            |
+| `spouses`         | Vợ/chồng (không huyết thống)      |
+| `marriages`       | Quan hệ hôn nhân                  |
+| `profiles`        | Tài khoản người dùng              |
+| `events`          | Sự kiện                           |
+| `funds`           | Quỹ                               |
+| `transactions`    | Giao dịch thu chi                 |
+| `ancestral_house` | Thông tin từ đường                |
+| `renovation_logs` | Lịch sử tu bổ                     |
+| `posts`           | Bài viết                          |
+| `notifications`   | Thông báo                         |
+| `documents`       | Tài liệu                          |
 
-### User Pages:
+### Bảng Bổ Sung (Member Proposals)
 
-- `/UserDashboard` - Trang chủ người dùng
-- `/login` - Đăng nhập
-- `/register` - Đăng ký
-
----
-
-## 🛠️ Công Nghệ Sử Dụng
-
-| Frontend     | Backend         | Database   |
-| ------------ | --------------- | ---------- |
-| React 18     | Node.js         | Supabase   |
-| Vite         | Express.js      | PostgreSQL |
-| TailwindCSS  | JWT Auth        |            |
-| React Router | Multer (upload) |            |
-| Lucide Icons |                 |            |
+| Bảng                  | Mô tả                    |
+| --------------------- | ------------------------ |
+| `event_proposals`     | Đề xuất sự kiện          |
+| `expense_proposals`   | Đề xuất chi phí          |
+| `event_registrations` | Đăng ký tham gia sự kiện |
+| `post_likes`          | Like bài viết            |
 
 ---
 
-## 📄 License
+## 📝 License
 
-MIT License - Dự án mã nguồn mở cho cộng đồng.
+MIT License
+
+---
+
+## 👥 Đóng Góp
+
+Mọi đóng góp đều được chào đón! Vui lòng tạo issue hoặc pull request.

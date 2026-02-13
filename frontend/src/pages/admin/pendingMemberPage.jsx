@@ -13,14 +13,14 @@ import {
   getAllMembers,
   getAllSpouses,
   getAllUsers,
-} from "../../Api/adminApi";
+} from "../../services/adminApi";
 import {
   PendingStatsCards,
   PendingTable,
   AllUsersTable,
   RejectModal,
   PendingMemberDetailModal,
-} from "../../components/adminComponents/PendingMembers";
+} from "../../components/admin/PendingMembers";
 
 const PendingMemberPage = () => {
   const [pendingAccounts, setPendingAccounts] = useState([]);

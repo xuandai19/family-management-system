@@ -18,7 +18,7 @@ import {
   createTransaction,
   deleteTransaction,
   getAllTransactions,
-} from "../../Api/fundApi";
+} from "../../services/fundApi";
 import {
   getAllCollectionRounds,
   createCollectionRound,
@@ -27,8 +27,8 @@ import {
   getPaymentsByRound,
   confirmPayment,
   deletePayment,
-} from "../../Api/collectionApi";
-import { getAllFamilyMembers } from "../../Api/adminApi";
+} from "../../services/collectionApi";
+import { getAllFamilyMembers } from "../../services/adminApi";
 import {
   FundStatsCards,
   FundList,
@@ -38,7 +38,7 @@ import {
   CollectionRoundList,
   CollectionRoundModal,
   PaymentManagement,
-} from "../../components/adminComponents/Fund";
+} from "../../components/admin/Fund";
 
 // Danh mục
 const incomeCategories = [

@@ -5,7 +5,7 @@ import {
   NotifiFilters,
   NotifiList,
   NotifiDetailModal,
-} from "../../components/adminComponents/Notifi";
+} from "../../components/admin/Notifi";
 import {
   getAllNotifications,
   getUnreadNotifications,
@@ -13,7 +13,7 @@ import {
   markAllAsRead,
   deleteNotification,
   getUnreadCount,
-} from "../../Api/notifiApi";
+} from "../../services/notifiApi";
 
 const NotificationPage = () => {
   const [notifications, setNotifications] = useState([]);

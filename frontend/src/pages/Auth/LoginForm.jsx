@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { loginUser } from "../../Api/authApi.js";
+import { loginUser } from "../../services/authApi.js";
 import { useNavigate } from "react-router-dom";
 import {
   LogIn,
@@ -38,7 +38,7 @@ const LoginForm = () => {
           navigate("/admin/dashboard");
         } else {
           // Các role khác - vào trang user
-          navigate("/user/dashboard");
+          navigate("/member/dashboard");
         }
       }
     } catch (err) {

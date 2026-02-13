@@ -14,7 +14,7 @@ import {
   createRenovationLog,
   updateRenovationLog,
   deleteRenovationLog,
-} from "../../Api/ancestralHouseApi";
+} from "../../services/ancestralHouseApi";
 import {
   HeroSection,
   PhotoGallery,
@@ -24,7 +24,7 @@ import {
   HouseFormModal,
   RenovationFormModal,
   DeleteConfirmModal,
-} from "../../components/adminComponents/AncestralHouse";
+} from "../../components/admin/AncestralHouse";
 
 const AncestralHousePage = () => {
   // State cho nhà thờ tổ

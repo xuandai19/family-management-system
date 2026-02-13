@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Home, GitBranch, X, Loader2 } from "lucide-react";
-import { getFamilyTree } from "../../Api/familyTreeApi";
+import { getFamilyTree } from "../../services/familyTreeApi";
 import {
   FamilyNode,
   SearchBox,
   ZoomControls,
   Legend,
   PersonInfoModal,
-} from "../../components/FamilyTree";
+} from "../../components/member/FamilyTree";
 
 const DEFAULT_ROOT_ID = 1;
 const MIN_SCALE = 0.3;

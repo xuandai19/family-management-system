@@ -1,5 +1,5 @@
 import React from "react";
-import EventList from "../../components/adminComponents/Events/EventList";
+import EventList from "../../components/admin/Events/EventList";
 
 const Event = () => {
   return (

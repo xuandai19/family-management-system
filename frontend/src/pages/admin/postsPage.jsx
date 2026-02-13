@@ -23,8 +23,8 @@ import {
   deletePost,
   approvePost,
   rejectPost,
-} from "../../Api/postApi";
-import { uploadSingleImage } from "../../Api/uploadApi";
+} from "../../services/postApi";
+import { uploadSingleImage } from "../../services/uploadApi";
 
 const CATEGORIES = {
   news: { label: "Tin tức", color: "bg-blue-100 text-blue-700" },

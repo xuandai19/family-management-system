@@ -19,17 +19,17 @@ import {
   updateSpouse,
   deleteSpouse,
   getAllMembersWithSpouse,
-} from "../../Api/adminApi";
+} from "../../services/adminApi";
 import {
   FamilyStatsCards,
   FamilyMembersTable,
   SpousesTable,
   MemberDetailModal,
-} from "../../components/adminComponents/FamilyManagement";
+} from "../../components/admin/FamilyManagement";
 import {
   MemberFormModal,
   DeleteConfirmModal,
-} from "../../components/adminComponents/userManagement";
+} from "../../components/admin/userManagement";
 
 const FamilyManagementPage = () => {
   const [familyMembers, setFamilyMembers] = useState([]);
