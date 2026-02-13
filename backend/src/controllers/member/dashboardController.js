@@ -44,7 +44,7 @@ export const getDashboardStats = async (req, res) => {
       if (contributions) {
         totalContributed = contributions.reduce(
           (sum, c) => sum + (parseFloat(c.amount) || 0),
-          0
+          0,
         );
       }
     }

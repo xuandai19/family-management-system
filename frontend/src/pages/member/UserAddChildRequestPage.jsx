@@ -19,7 +19,11 @@ import {
 } from "lucide-react";
 import PageHeader from "./components/PageHeader";
 import QuickNavigation from "./components/QuickNavigation";
-import { submitChildRequest, getMyChildRequests, cancelChildRequest } from "../../services/memberApi";
+import {
+  submitChildRequest,
+  getMyChildRequests,
+  cancelChildRequest,
+} from "../../services/memberApi";
 
 const UserAddChildRequestPage = () => {
   const navigate = useNavigate();
@@ -120,8 +124,10 @@ const UserAddChildRequestPage = () => {
       const response = await submitChildRequest(formData);
 
       if (response.success) {
-        alert(response.message || "Đã gửi yêu cầu thêm con đến Admin để xét duyệt!");
-        
+        alert(
+          response.message || "Đã gửi yêu cầu thêm con đến Admin để xét duyệt!",
+        );
+
         // Refresh danh sách
         fetchChildRequests();
 

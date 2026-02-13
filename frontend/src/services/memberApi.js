@@ -17,7 +17,9 @@ export const getMemberEvents = async (filters = {}) => {
     if (filters.month) params.append("month", filters.month);
 
     const queryString = params.toString();
-    const url = queryString ? `/member/events?${queryString}` : "/member/events";
+    const url = queryString
+      ? `/member/events?${queryString}`
+      : "/member/events";
 
     const response = await api.get(url);
     return response.data;
@@ -30,7 +32,9 @@ export const getMemberEvents = async (filters = {}) => {
 // Lấy sự kiện sắp tới
 export const getUpcomingEvents = async (limit = 5) => {
   try {
-    const response = await api.get(`/member/dashboard/upcoming-events?limit=${limit}`);
+    const response = await api.get(
+      `/member/dashboard/upcoming-events?limit=${limit}`,
+    );
     return response.data;
   } catch (error) {
     console.error("Lỗi khi lấy sự kiện sắp tới:", error);
@@ -203,7 +207,9 @@ export const getFundReport = async (filters = {}) => {
     if (filters.fund_id) params.append("fund_id", filters.fund_id);
 
     const queryString = params.toString();
-    const url = queryString ? `/member/funds/report?${queryString}` : "/member/funds/report";
+    const url = queryString
+      ? `/member/funds/report?${queryString}`
+      : "/member/funds/report";
 
     const response = await api.get(url);
     return response.data;
@@ -216,7 +222,9 @@ export const getFundReport = async (filters = {}) => {
 // Lấy thông báo đóng quỹ
 export const getCollectionNotifications = async (status = "active") => {
   try {
-    const response = await api.get(`/member/funds/collections?status=${status}`);
+    const response = await api.get(
+      `/member/funds/collections?status=${status}`,
+    );
     return response.data;
   } catch (error) {
     console.error("Lỗi khi lấy thông báo đóng quỹ:", error);
@@ -343,7 +351,9 @@ export const getMyChildRequests = async () => {
 // Hủy yêu cầu thêm con
 export const cancelChildRequest = async (requestId) => {
   try {
-    const response = await api.delete(`/member/family/child-request/${requestId}`);
+    const response = await api.delete(
+      `/member/family/child-request/${requestId}`,
+    );
     return response.data;
   } catch (error) {
     console.error("Lỗi khi hủy yêu cầu:", error);

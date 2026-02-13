@@ -59,11 +59,13 @@ const UserFundReportPage = () => {
         const response = await getFundReport();
         if (response.success) {
           setTransactions(response.data?.transactions || []);
-          setSummary(response.data?.summary || {
-            totalIncome: 0,
-            totalExpense: 0,
-            balance: 0,
-          });
+          setSummary(
+            response.data?.summary || {
+              totalIncome: 0,
+              totalExpense: 0,
+              balance: 0,
+            },
+          );
         } else {
           setError(response.message || "Không thể tải báo cáo thu chi");
         }

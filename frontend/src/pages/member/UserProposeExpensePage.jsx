@@ -41,7 +41,11 @@ const UserProposeExpensePage = () => {
 
   const priorities = [
     { value: "low", label: "Thấp", color: "bg-gray-100 text-gray-600" },
-    { value: "normal", label: "Bình thường", color: "bg-blue-100 text-blue-600" },
+    {
+      value: "normal",
+      label: "Bình thường",
+      color: "bg-blue-100 text-blue-600",
+    },
     { value: "high", label: "Cao", color: "bg-orange-100 text-orange-600" },
     { value: "urgent", label: "Khẩn cấp", color: "bg-red-100 text-red-600" },
   ];
@@ -73,7 +77,8 @@ const UserProposeExpensePage = () => {
     if (!formData.title.trim()) newErrors.title = "Vui lòng nhập tên khoản chi";
     if (!formData.amount || formData.amount === "0")
       newErrors.amount = "Vui lòng nhập số tiền";
-    if (!formData.description.trim()) newErrors.description = "Vui lòng nhập lý do";
+    if (!formData.description.trim())
+      newErrors.description = "Vui lòng nhập lý do";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -91,7 +96,7 @@ const UserProposeExpensePage = () => {
         ...formData,
         amount: parseFloat(formData.amount.replace(/,/g, "")) || 0,
       };
-      
+
       const response = await proposeExpense(submitData);
       if (response.success) {
         setSuccess(true);
@@ -116,7 +121,9 @@ const UserProposeExpensePage = () => {
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle2 size={32} className="text-green-600" />
           </div>
-          <h2 className="text-xl font-bold text-gray-800 mb-2">Đề xuất thành công!</h2>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">
+            Đề xuất thành công!
+          </h2>
           <p className="text-gray-600 mb-4">
             Đề xuất khoản chi của bạn đã được gửi và đang chờ Admin phê duyệt.
           </p>
@@ -164,7 +171,9 @@ const UserProposeExpensePage = () => {
                   onChange={handleChange}
                   placeholder="VD: Sửa mái nhà thờ"
                   className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all ${
-                    errors.title ? "border-red-300 bg-red-50" : "border-gray-200"
+                    errors.title
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-200"
                   }`}
                 />
               </div>
@@ -193,7 +202,9 @@ const UserProposeExpensePage = () => {
                   onChange={handleAmountChange}
                   placeholder="0"
                   className={`w-full pl-10 pr-16 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all ${
-                    errors.amount ? "border-red-300 bg-red-50" : "border-gray-200"
+                    errors.amount
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-200"
                   }`}
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">
@@ -239,7 +250,9 @@ const UserProposeExpensePage = () => {
 
             {/* Priority */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Mức độ ưu tiên</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Mức độ ưu tiên
+              </label>
               <div className="flex flex-wrap gap-3">
                 {priorities.map((p) => (
                   <label
@@ -297,7 +310,9 @@ const UserProposeExpensePage = () => {
                 placeholder="Mô tả chi tiết về khoản chi này, lý do cần chi và cách sử dụng..."
                 rows={4}
                 className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all resize-none ${
-                  errors.description ? "border-red-300 bg-red-50" : "border-gray-200"
+                  errors.description
+                    ? "border-red-300 bg-red-50"
+                    : "border-gray-200"
                 }`}
               />
               {errors.description && (

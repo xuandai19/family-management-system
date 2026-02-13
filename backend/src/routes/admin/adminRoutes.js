@@ -50,7 +50,7 @@ router.get(
   "/members-with-spouse",
   verifyToken,
   isAdmin,
-  getAllMembersWithSpouse
+  getAllMembersWithSpouse,
 );
 
 // Duyệt tài khoản MEMBER (admin chọn member_id)
@@ -58,7 +58,7 @@ router.patch(
   "/approve-member/:profileId",
   verifyToken,
   isAdmin,
-  approveMemberRegistration
+  approveMemberRegistration,
 );
 
 // Từ chối đăng ký (member hoặc spouse)
@@ -66,7 +66,7 @@ router.patch(
   "/reject/:profileId",
   verifyToken,
   isAdmin,
-  rejectMemberRegistration
+  rejectMemberRegistration,
 );
 
 /**
@@ -83,7 +83,7 @@ router.patch(
   "/approve-spouse/:profileId",
   verifyToken,
   isAdmin,
-  approveSpouseRegistration
+  approveSpouseRegistration,
 );
 
 /**
@@ -118,7 +118,7 @@ router.put(
   "/family-members/:memberId",
   verifyToken,
   isAdmin,
-  updateFamilyMember
+  updateFamilyMember,
 );
 
 // Xóa thành viên gia phả
@@ -126,7 +126,7 @@ router.delete(
   "/family-members/:memberId",
   verifyToken,
   isAdmin,
-  deleteFamilyMember
+  deleteFamilyMember,
 );
 
 // Lấy tất cả spouse (đầy đủ)

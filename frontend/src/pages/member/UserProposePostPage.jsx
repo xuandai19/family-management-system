@@ -29,8 +29,16 @@ const UserProposePostPage = () => {
 
   const categories = [
     { value: "news", label: "Tin tức", description: "Tin tức mới về dòng họ" },
-    { value: "history", label: "Lịch sử", description: "Bài viết về lịch sử dòng họ" },
-    { value: "contribution", label: "Công đức", description: "Thông tin đóng góp" },
+    {
+      value: "history",
+      label: "Lịch sử",
+      description: "Bài viết về lịch sử dòng họ",
+    },
+    {
+      value: "contribution",
+      label: "Công đức",
+      description: "Thông tin đóng góp",
+    },
     { value: "guide", label: "Hướng dẫn", description: "Hướng dẫn, thủ tục" },
     { value: "event", label: "Sự kiện", description: "Tường thuật sự kiện" },
     { value: "other", label: "Khác", description: "Các chủ đề khác" },
@@ -50,8 +58,10 @@ const UserProposePostPage = () => {
     if (!formData.title.trim()) newErrors.title = "Vui lòng nhập tiêu đề";
     if (!formData.excerpt.trim()) newErrors.excerpt = "Vui lòng nhập tóm tắt";
     if (!formData.content.trim()) newErrors.content = "Vui lòng nhập nội dung";
-    if (formData.title.length > 200) newErrors.title = "Tiêu đề không quá 200 ký tự";
-    if (formData.excerpt.length > 500) newErrors.excerpt = "Tóm tắt không quá 500 ký tự";
+    if (formData.title.length > 200)
+      newErrors.title = "Tiêu đề không quá 200 ký tự";
+    if (formData.excerpt.length > 500)
+      newErrors.excerpt = "Tóm tắt không quá 500 ký tự";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -88,7 +98,9 @@ const UserProposePostPage = () => {
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle2 size={32} className="text-green-600" />
           </div>
-          <h2 className="text-xl font-bold text-gray-800 mb-2">Đề xuất thành công!</h2>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">
+            Đề xuất thành công!
+          </h2>
           <p className="text-gray-600 mb-4">
             Bài viết của bạn đã được gửi và đang chờ Admin duyệt đăng.
           </p>
@@ -137,7 +149,9 @@ const UserProposePostPage = () => {
                   placeholder="Nhập tiêu đề hấp dẫn cho bài viết"
                   maxLength={200}
                   className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all ${
-                    errors.title ? "border-red-300 bg-red-50" : "border-gray-200"
+                    errors.title
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-200"
                   }`}
                 />
               </div>
@@ -150,7 +164,9 @@ const UserProposePostPage = () => {
                 ) : (
                   <span />
                 )}
-                <span className="text-xs text-gray-400">{formData.title.length}/200</span>
+                <span className="text-xs text-gray-400">
+                  {formData.title.length}/200
+                </span>
               </div>
             </div>
 
@@ -179,12 +195,16 @@ const UserProposePostPage = () => {
                     />
                     <span
                       className={`text-sm font-medium ${
-                        formData.category === cat.value ? "text-amber-700" : "text-gray-800"
+                        formData.category === cat.value
+                          ? "text-amber-700"
+                          : "text-gray-800"
                       }`}
                     >
                       {cat.label}
                     </span>
-                    <span className="text-xs text-gray-500 mt-1">{cat.description}</span>
+                    <span className="text-xs text-gray-500 mt-1">
+                      {cat.description}
+                    </span>
                   </label>
                 ))}
               </div>
@@ -203,7 +223,9 @@ const UserProposePostPage = () => {
                 rows={3}
                 maxLength={500}
                 className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all resize-none ${
-                  errors.excerpt ? "border-red-300 bg-red-50" : "border-gray-200"
+                  errors.excerpt
+                    ? "border-red-300 bg-red-50"
+                    : "border-gray-200"
                 }`}
               />
               <div className="flex justify-between mt-1">
@@ -215,7 +237,9 @@ const UserProposePostPage = () => {
                 ) : (
                   <span />
                 )}
-                <span className="text-xs text-gray-400">{formData.excerpt.length}/500</span>
+                <span className="text-xs text-gray-400">
+                  {formData.excerpt.length}/500
+                </span>
               </div>
             </div>
 
@@ -285,7 +309,9 @@ Bạn có thể:
             {/* Thumbnail Upload Hint */}
             <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center">
               <Image className="mx-auto text-gray-400 mb-2" size={32} />
-              <p className="text-sm text-gray-600 mb-1">Thêm ảnh đại diện cho bài viết (tùy chọn)</p>
+              <p className="text-sm text-gray-600 mb-1">
+                Thêm ảnh đại diện cho bài viết (tùy chọn)
+              </p>
               <p className="text-xs text-gray-400">
                 Chức năng này sẽ được cập nhật trong phiên bản tiếp theo
               </p>
@@ -299,8 +325,12 @@ Bạn có thể:
                   <p className="font-medium mb-1">Lưu ý khi viết bài:</p>
                   <ul className="list-disc list-inside space-y-1 text-amber-700">
                     <li>Bài viết sẽ được Admin xem xét trước khi đăng</li>
-                    <li>Nội dung phải phù hợp, không vi phạm thuần phong mỹ tục</li>
-                    <li>Thông tin phải chính xác và có nguồn (nếu trích dẫn)</li>
+                    <li>
+                      Nội dung phải phù hợp, không vi phạm thuần phong mỹ tục
+                    </li>
+                    <li>
+                      Thông tin phải chính xác và có nguồn (nếu trích dẫn)
+                    </li>
                     <li>Ảnh minh họa nên rõ ràng và liên quan đến nội dung</li>
                   </ul>
                 </div>

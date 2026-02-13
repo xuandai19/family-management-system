@@ -78,7 +78,7 @@ const UserProfilePage = () => {
     } catch (err) {
       console.error("Lỗi fetch user:", err);
       setError("Không thể tải thông tin. Vui lòng thử lại sau.");
-      
+
       // Fallback to localStorage if API fails
       const userData = JSON.parse(localStorage.getItem("user") || "{}");
       if (userData.profile) {
@@ -142,7 +142,9 @@ const UserProfilePage = () => {
       const response = await updateMyProfile(changes);
 
       if (response.success) {
-        alert(response.message || "Đã gửi yêu cầu sửa đổi thông tin thành công!");
+        alert(
+          response.message || "Đã gửi yêu cầu sửa đổi thông tin thành công!",
+        );
         setShowEditModal(false);
         // Refresh profile data
         fetchUserProfile();

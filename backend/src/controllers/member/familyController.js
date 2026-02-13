@@ -83,7 +83,7 @@ export const getFamilyTree = async (req, res) => {
       allMembers,
       allMarriages || [],
       allSpouses || [],
-      rootId
+      rootId,
     );
 
     if (!tree) {
@@ -222,10 +222,21 @@ export const getAdmins = async (req, res) => {
 export const submitChildRequest = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { full_name, gender, date_of_birth, phone, email, address, occupation, note } = req.body;
+    const {
+      full_name,
+      gender,
+      date_of_birth,
+      phone,
+      email,
+      address,
+      occupation,
+      note,
+    } = req.body;
 
     if (!full_name) {
-      return res.status(400).json({ success: false, message: "Vui lòng nhập họ tên" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Vui lòng nhập họ tên" });
     }
 
     // Lấy member_id của user (cha/mẹ)
@@ -236,9 +247,9 @@ export const submitChildRequest = async (req, res) => {
       .single();
 
     if (!profile?.member_id) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Bạn chưa được liên kết với thành viên trong gia phả" 
+      return res.status(400).json({
+        success: false,
+        message: "Bạn chưa được liên kết với thành viên trong gia phả",
       });
     }
 
@@ -248,7 +259,7 @@ export const submitChildRequest = async (req, res) => {
       .insert({
         requester_id: userId,
         target_member_id: profile.member_id, // Cha/mẹ
-        request_type: 'ADD_MEMBER',
+        request_type: "ADD_MEMBER",
         new_data: {
           full_name,
           gender,
@@ -260,7 +271,7 @@ export const submitChildRequest = async (req, res) => {
           notes: note,
           father_id: profile.member_id, // Con sẽ có father_id là member_id của user
         },
-        status: 'pending',
+        status: "pending",
         created_at: new Date().toISOString(),
       })
       .select()
@@ -268,10 +279,11 @@ export const submitChildRequest = async (req, res) => {
 
     if (error) throw error;
 
-    res.json({ 
-      success: true, 
-      message: "Đã gửi yêu cầu thêm con thành công! Vui lòng chờ Admin xét duyệt.",
-      data 
+    res.json({
+      success: true,
+      message:
+        "Đã gửi yêu cầu thêm con thành công! Vui lòng chờ Admin xét duyệt.",
+      data,
     });
   } catch (error) {
     console.error("Error submitting child request:", error);
@@ -296,7 +308,7 @@ export const getMyChildRequests = async (req, res) => {
     if (error) throw error;
 
     // Transform data để frontend dễ dùng
-    const requests = (data || []).map(req => ({
+    const requests = (data || []).map((req) => ({
       id: req.id,
       child_name: req.new_data?.full_name,
       status: req.status,
@@ -331,9 +343,9 @@ export const cancelChildRequest = async (req, res) => {
       .single();
 
     if (checkError || !request) {
-      return res.status(404).json({ 
-        success: false, 
-        message: "Không tìm thấy yêu cầu hoặc yêu cầu đã được xử lý" 
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy yêu cầu hoặc yêu cầu đã được xử lý",
       });
     }
 

@@ -29,7 +29,7 @@ export const getMyProfile = async (req, res) => {
           is_alive,
           notes
         )
-      `
+      `,
       )
       .eq("id", userId)
       .single();
@@ -143,7 +143,7 @@ export const getMyFamilyInfo = async (req, res) => {
         father:family_members!family_members_father_id_fkey (id, full_name),
         mother:family_members!family_members_mother_id_fkey (id, full_name),
         spouse:family_members!family_members_spouse_id_fkey (id, full_name)
-      `
+      `,
       )
       .eq("id", profile.member_id)
       .single();
@@ -243,7 +243,7 @@ export const getMyActivities = async (req, res) => {
           amount, 
           payment_date,
           collection_round:collection_rounds (title)
-        `
+        `,
         )
         .eq("member_id", profile.member_id)
         .order("payment_date", { ascending: false })

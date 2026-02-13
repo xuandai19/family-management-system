@@ -53,11 +53,17 @@ const UserPostsPage = () => {
     try {
       const response = await toggleLikePost(postId);
       if (response.success) {
-        setPosts(posts.map(post => 
-          post.id === postId 
-            ? { ...post, likes: response.data.like_count, isLiked: response.data.isLiked }
-            : post
-        ));
+        setPosts(
+          posts.map((post) =>
+            post.id === postId
+              ? {
+                  ...post,
+                  likes: response.data.like_count,
+                  isLiked: response.data.isLiked,
+                }
+              : post,
+          ),
+        );
       }
     } catch (error) {
       console.error("Error liking post:", error);
@@ -139,7 +145,10 @@ const UserPostsPage = () => {
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
             {/* Search */}
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                size={20}
+              />
               <input
                 type="text"
                 placeholder="Tìm kiếm bài viết..."
@@ -181,7 +190,9 @@ const UserPostsPage = () => {
         {filteredPosts.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
             <FileText size={48} className="mx-auto text-gray-300 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">Chưa có bài viết</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">
+              Chưa có bài viết
+            </h3>
             <p className="text-gray-500 mb-4">
               {searchTerm
                 ? "Không tìm thấy bài viết phù hợp"
@@ -231,7 +242,9 @@ const UserPostsPage = () => {
                     <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-2 group-hover:text-amber-600 transition-colors">
                       {post.title}
                     </h3>
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">{post.excerpt}</p>
+                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                      {post.excerpt}
+                    </p>
 
                     {/* Author & Date */}
                     <div className="flex items-center gap-3 mb-4">
@@ -250,7 +263,9 @@ const UserPostsPage = () => {
                         <p className="text-sm font-medium text-gray-800 truncate">
                           {post.author?.name || "Ẩn danh"}
                         </p>
-                        <p className="text-xs text-gray-500">{formatDate(post.created_at)}</p>
+                        <p className="text-xs text-gray-500">
+                          {formatDate(post.created_at)}
+                        </p>
                       </div>
                     </div>
 
@@ -318,7 +333,9 @@ const UserPostsPage = () => {
                 </span>
 
                 {/* Title */}
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">{selectedPost.title}</h2>
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                  {selectedPost.title}
+                </h2>
 
                 {/* Author & Meta */}
                 <div className="flex items-center gap-4 pb-4 mb-4 border-b border-gray-100">
@@ -330,7 +347,9 @@ const UserPostsPage = () => {
                       <p className="font-medium text-gray-800">
                         {selectedPost.author?.name || "Ẩn danh"}
                       </p>
-                      <p className="text-sm text-gray-500">{formatDate(selectedPost.created_at)}</p>
+                      <p className="text-sm text-gray-500">
+                        {formatDate(selectedPost.created_at)}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4 ml-auto text-sm text-gray-500">

@@ -1,43 +1,43 @@
-import { useState } from 'react';
-import { Eye, EyeOff, Lock, CheckCircle, AlertCircle } from 'lucide-react';
-import { changePassword } from '../../services/memberApi';
+import { useState } from "react";
+import { Eye, EyeOff, Lock, CheckCircle, AlertCircle } from "lucide-react";
+import { changePassword } from "../../services/memberApi";
 
 const ChangePassword = ({ onSuccess = null }) => {
   const [formData, setFormData] = useState({
-    oldPassword: '',
-    newPassword: '',
-    confirmPassword: ''
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
   const [showPasswords, setShowPasswords] = useState({
     oldPassword: false,
     newPassword: false,
-    confirmPassword: false
+    confirmPassword: false,
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState("");
 
   const validateForm = () => {
     const newErrors = {};
 
     if (!formData.oldPassword) {
-      newErrors.oldPassword = 'Vui lòng nhập mật khẩu cũ';
+      newErrors.oldPassword = "Vui lòng nhập mật khẩu cũ";
     }
 
     if (!formData.newPassword) {
-      newErrors.newPassword = 'Vui lòng nhập mật khẩu mới';
+      newErrors.newPassword = "Vui lòng nhập mật khẩu mới";
     } else if (formData.newPassword.length < 6) {
-      newErrors.newPassword = 'Mật khẩu mới phải có ít nhất 6 ký tự';
+      newErrors.newPassword = "Mật khẩu mới phải có ít nhất 6 ký tự";
     }
 
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Vui lòng xác nhận mật khẩu';
+      newErrors.confirmPassword = "Vui lòng xác nhận mật khẩu";
     } else if (formData.newPassword !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Mật khẩu xác nhận không trùng khớp';
+      newErrors.confirmPassword = "Mật khẩu xác nhận không trùng khớp";
     }
 
     if (formData.oldPassword === formData.newPassword) {
-      newErrors.newPassword = 'Mật khẩu mới không được trùng mật khẩu cũ';
+      newErrors.newPassword = "Mật khẩu mới không được trùng mật khẩu cũ";
     }
 
     setErrors(newErrors);
@@ -46,22 +46,22 @@ const ChangePassword = ({ onSuccess = null }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const togglePasswordVisibility = (field) => {
-    setShowPasswords(prev => ({
+    setShowPasswords((prev) => ({
       ...prev,
-      [field]: !prev[field]
+      [field]: !prev[field],
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSuccessMessage('');
+    setSuccessMessage("");
 
     if (!validateForm()) {
       return;
@@ -77,29 +77,31 @@ const ChangePassword = ({ onSuccess = null }) => {
       });
 
       if (response.success) {
-        setSuccessMessage(response.message || 'Đổi mật khẩu thành công!');
+        setSuccessMessage(response.message || "Đổi mật khẩu thành công!");
         setFormData({
-          oldPassword: '',
-          newPassword: '',
-          confirmPassword: ''
+          oldPassword: "",
+          newPassword: "",
+          confirmPassword: "",
         });
 
         if (onSuccess) {
           onSuccess();
         }
 
-        setTimeout(() => setSuccessMessage(''), 3000);
+        setTimeout(() => setSuccessMessage(""), 3000);
       } else {
-        setErrors(prev => ({
+        setErrors((prev) => ({
           ...prev,
-          submit: response.message || 'Lỗi khi đổi mật khẩu'
+          submit: response.message || "Lỗi khi đổi mật khẩu",
         }));
       }
     } catch (err) {
-      console.error('Error changing password:', err);
-      setErrors(prev => ({
+      console.error("Error changing password:", err);
+      setErrors((prev) => ({
         ...prev,
-        submit: err.response?.data?.message || 'Lỗi khi đổi mật khẩu. Vui lòng thử lại.'
+        submit:
+          err.response?.data?.message ||
+          "Lỗi khi đổi mật khẩu. Vui lòng thử lại.",
       }));
     } finally {
       setIsLoading(false);
@@ -113,7 +115,7 @@ const ChangePassword = ({ onSuccess = null }) => {
       </label>
       <div className="relative">
         <input
-          type={showPasswords[name] ? 'text' : 'password'}
+          type={showPasswords[name] ? "text" : "password"}
           name={name}
           value={value}
           onChange={handleInputChange}
@@ -121,8 +123,8 @@ const ChangePassword = ({ onSuccess = null }) => {
           autoComplete="off"
           className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition ${
             errors[name]
-              ? 'border-red-500 focus:ring-red-500'
-              : 'border-gray-300 focus:ring-yellow-500 focus:border-transparent'
+              ? "border-red-500 focus:ring-red-500"
+              : "border-gray-300 focus:ring-yellow-500 focus:border-transparent"
           }`}
         />
         <button
@@ -130,11 +132,7 @@ const ChangePassword = ({ onSuccess = null }) => {
           onClick={() => togglePasswordVisibility(name)}
           className="absolute right-3 top-3 text-gray-500 hover:text-gray-700"
         >
-          {showPasswords[name] ? (
-            <EyeOff size={20} />
-          ) : (
-            <Eye size={20} />
-          )}
+          {showPasswords[name] ? <EyeOff size={20} /> : <Eye size={20} />}
         </button>
       </div>
       {errors[name] && (
@@ -163,14 +161,17 @@ const ChangePassword = ({ onSuccess = null }) => {
             </div>
             <div>
               <h2 className="text-xl font-bold">GIA PHÁ</h2>
-              <p className="text-sm text-amber-100">Hệ thống quản lý gia đình</p>
+              <p className="text-sm text-amber-100">
+                Hệ thống quản lý gia đình
+              </p>
             </div>
           </div>
 
           {/* Main Text */}
           <h1 className="text-4xl font-bold mb-4">Bảo vệ tài khoản</h1>
           <p className="text-lg text-amber-100 leading-relaxed">
-            Thay đổi mật khẩu thường xuyên giúp bảo vệ tài khoản của bạn. Hãy tạo mật khẩu mạnh và duy nhất cho tài khoản Gia Phá.
+            Thay đổi mật khẩu thường xuyên giúp bảo vệ tài khoản của bạn. Hãy
+            tạo mật khẩu mạnh và duy nhất cho tài khoản Gia Phá.
           </p>
         </div>
 
@@ -188,7 +189,9 @@ const ChangePassword = ({ onSuccess = null }) => {
             <Lock size={32} className="text-amber-700" />
             <div>
               <h3 className="text-2xl font-bold text-gray-800">Đổi mật khẩu</h3>
-              <p className="text-sm text-gray-500">Cập nhật mật khẩu của bạn để bảo mật</p>
+              <p className="text-sm text-gray-500">
+                Cập nhật mật khẩu của bạn để bảo mật
+              </p>
             </div>
           </div>
 
@@ -234,15 +237,21 @@ const ChangePassword = ({ onSuccess = null }) => {
             {/* Password Strength Indicator */}
             {formData.newPassword && (
               <div className="mb-6 p-3 bg-blue-50 rounded-lg">
-                <p className="text-sm text-gray-700 font-medium mb-2">Độ mạnh mật khẩu:</p>
+                <p className="text-sm text-gray-700 font-medium mb-2">
+                  Độ mạnh mật khẩu:
+                </p>
                 <div className="flex gap-1">
                   {[...Array(3)].map((_, i) => (
                     <div
                       key={i}
                       className={`h-2 flex-1 rounded ${
                         formData.newPassword.length >= (i + 1) * 4
-                          ? i < 1 ? 'bg-green-500' : i < 2 ? 'bg-yellow-500' : 'bg-red-500'
-                          : 'bg-gray-300'
+                          ? i < 1
+                            ? "bg-green-500"
+                            : i < 2
+                              ? "bg-yellow-500"
+                              : "bg-red-500"
+                          : "bg-gray-300"
                       }`}
                     />
                   ))}

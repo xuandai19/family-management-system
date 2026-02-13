@@ -132,7 +132,10 @@ const UserEventsPage = () => {
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
             {/* Search */}
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                size={20}
+              />
               <input
                 type="text"
                 placeholder="Tìm kiếm sự kiện..."
@@ -178,13 +181,15 @@ const UserEventsPage = () => {
         {sortedEvents.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
             <CalendarDays size={48} className="mx-auto text-gray-300 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">Chưa có sự kiện nào</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">
+              Chưa có sự kiện nào
+            </h3>
             <p className="text-gray-500 mb-4">
               {filter === "upcoming"
                 ? "Không có sự kiện sắp diễn ra"
                 : filter === "past"
-                ? "Không có sự kiện đã qua"
-                : "Hãy đề xuất sự kiện mới cho dòng họ"}
+                  ? "Không có sự kiện đã qua"
+                  : "Hãy đề xuất sự kiện mới cho dòng họ"}
             </p>
             <button
               onClick={() => navigate("/member/propose-event")}
@@ -222,8 +227,12 @@ const UserEventsPage = () => {
                           <Calendar size={24} />
                         </div>
                         <div>
-                          <p className="text-sm opacity-90">{formatDate(event.event_date)}</p>
-                          <p className="text-lg font-bold">{event.event_time || "08:00"}</p>
+                          <p className="text-sm opacity-90">
+                            {formatDate(event.event_date)}
+                          </p>
+                          <p className="text-lg font-bold">
+                            {event.event_time || "08:00"}
+                          </p>
                         </div>
                       </div>
                       <span
@@ -242,12 +251,16 @@ const UserEventsPage = () => {
                       <h3 className="text-lg font-bold text-gray-800 group-hover:text-amber-600 transition-colors">
                         {event.title}
                       </h3>
-                      <span className={`px-2.5 py-1 rounded-lg text-xs font-medium ${typeInfo.color}`}>
+                      <span
+                        className={`px-2.5 py-1 rounded-lg text-xs font-medium ${typeInfo.color}`}
+                      >
                         {typeInfo.label}
                       </span>
                     </div>
 
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">{event.description}</p>
+                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                      {event.description}
+                    </p>
 
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -258,7 +271,8 @@ const UserEventsPage = () => {
                         <div className="flex items-center gap-2 text-sm text-gray-500">
                           <Users size={16} className="text-amber-500" />
                           <span>
-                            {event.current_participants || 0}/{event.max_participants} người tham gia
+                            {event.current_participants || 0}/
+                            {event.max_participants} người tham gia
                           </span>
                         </div>
                       )}
@@ -313,7 +327,9 @@ const UserEventsPage = () => {
                     >
                       {getEventTypeLabel(selectedEvent.event_type).label}
                     </span>
-                    <h2 className="text-xl font-bold text-gray-800">{selectedEvent.title}</h2>
+                    <h2 className="text-xl font-bold text-gray-800">
+                      {selectedEvent.title}
+                    </h2>
                   </div>
                   <button
                     onClick={() => setSelectedEvent(null)}
@@ -329,7 +345,8 @@ const UserEventsPage = () => {
                     <div>
                       <p className="text-sm text-gray-500">Thời gian</p>
                       <p className="font-medium text-gray-800">
-                        {formatDate(selectedEvent.event_date)} - {selectedEvent.event_time || "08:00"}
+                        {formatDate(selectedEvent.event_date)} -{" "}
+                        {selectedEvent.event_time || "08:00"}
                       </p>
                     </div>
                   </div>
@@ -338,7 +355,9 @@ const UserEventsPage = () => {
                     <MapPin className="text-blue-600" size={20} />
                     <div>
                       <p className="text-sm text-gray-500">Địa điểm</p>
-                      <p className="font-medium text-gray-800">{selectedEvent.location}</p>
+                      <p className="font-medium text-gray-800">
+                        {selectedEvent.location}
+                      </p>
                     </div>
                   </div>
 
@@ -346,9 +365,12 @@ const UserEventsPage = () => {
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-xl">
                       <Users className="text-green-600" size={20} />
                       <div>
-                        <p className="text-sm text-gray-500">Số người tham gia</p>
+                        <p className="text-sm text-gray-500">
+                          Số người tham gia
+                        </p>
                         <p className="font-medium text-gray-800">
-                          {selectedEvent.current_participants || 0} / {selectedEvent.max_participants} người
+                          {selectedEvent.current_participants || 0} /{" "}
+                          {selectedEvent.max_participants} người
                         </p>
                       </div>
                     </div>

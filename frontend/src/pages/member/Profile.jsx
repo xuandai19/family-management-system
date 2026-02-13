@@ -1,18 +1,18 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import UserAvatar from './components/UserAvatar';
-import UserInfo from './components/UserInfo';
-import UserStats from './components/UserStats';
-import UserMenu from './components/UserMenu';
-import { Settings, Bell, LogOut, AlertCircle } from 'lucide-react';
-import { getMyProfile, updateMyProfile } from '../../services/memberApi';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import UserAvatar from "./components/UserAvatar";
+import UserInfo from "./components/UserInfo";
+import UserStats from "./components/UserStats";
+import UserMenu from "./components/UserMenu";
+import { Settings, Bell, LogOut, AlertCircle } from "lucide-react";
+import { getMyProfile, updateMyProfile } from "../../services/memberApi";
 
 const Profile = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeSection, setActiveSection] = useState('overview');
+  const [activeSection, setActiveSection] = useState("overview");
 
   useEffect(() => {
     fetchUserData();
@@ -23,17 +23,17 @@ const Profile = () => {
     setError(null);
     try {
       const response = await getMyProfile();
-      
+
       if (response.success && response.data) {
         setUser({
           id: response.data.id,
-          name: response.data.full_name || '',
-          email: response.data.email || '',
-          phone: response.data.phone || '',
-          address: response.data.address || '',
-          dateOfBirth: response.data.date_of_birth || '',
-          gender: response.data.gender || 'male',
-          avatar: response.data.avatar_url || '',
+          name: response.data.full_name || "",
+          email: response.data.email || "",
+          phone: response.data.phone || "",
+          address: response.data.address || "",
+          dateOfBirth: response.data.date_of_birth || "",
+          gender: response.data.gender || "male",
+          avatar: response.data.avatar_url || "",
           posts: response.data.posts_count || 0,
           events: response.data.events_count || 0,
           followers: response.data.followers_count || 0,
@@ -41,21 +41,21 @@ const Profile = () => {
         });
       }
     } catch (err) {
-      console.error('Error fetching user data:', err);
-      setError('Không thể tải thông tin. Vui lòng thử lại sau.');
-      
+      console.error("Error fetching user data:", err);
+      setError("Không thể tải thông tin. Vui lòng thử lại sau.");
+
       // Fallback to localStorage
-      const userData = JSON.parse(localStorage.getItem('user') || '{}');
+      const userData = JSON.parse(localStorage.getItem("user") || "{}");
       if (userData.profile) {
         setUser({
           id: userData.id,
-          name: userData.profile.full_name || '',
-          email: userData.email || '',
-          phone: userData.profile.phone || '',
-          address: userData.profile.address || '',
-          dateOfBirth: userData.profile.date_of_birth || '',
-          gender: userData.profile.gender || 'male',
-          avatar: userData.profile.avatar_url || '',
+          name: userData.profile.full_name || "",
+          email: userData.email || "",
+          phone: userData.profile.phone || "",
+          address: userData.profile.address || "",
+          dateOfBirth: userData.profile.date_of_birth || "",
+          gender: userData.profile.gender || "male",
+          avatar: userData.profile.avatar_url || "",
           posts: 0,
           events: 0,
           followers: 0,
@@ -70,9 +70,9 @@ const Profile = () => {
   const handleImageChange = async (file) => {
     try {
       // TODO: Upload image to server via uploadApi
-      console.log('Image uploaded:', file);
+      console.log("Image uploaded:", file);
     } catch (err) {
-      console.error('Error uploading image:', err);
+      console.error("Error uploading image:", err);
     }
   };
 
@@ -87,33 +87,33 @@ const Profile = () => {
       });
 
       if (response.success) {
-        setUser(prev => ({ ...prev, ...updatedData }));
-        alert('Đã cập nhật thông tin thành công');
+        setUser((prev) => ({ ...prev, ...updatedData }));
+        alert("Đã cập nhật thông tin thành công");
       } else {
-        alert(response.message || 'Lỗi khi cập nhật thông tin');
+        alert(response.message || "Lỗi khi cập nhật thông tin");
       }
     } catch (err) {
-      console.error('Error updating user info:', err);
-      alert(err.response?.data?.message || 'Lỗi khi cập nhật thông tin');
+      console.error("Error updating user info:", err);
+      alert(err.response?.data?.message || "Lỗi khi cập nhật thông tin");
     }
   };
 
   const handleMenuNavigate = (action) => {
     switch (action) {
-      case 'profile':
-        setActiveSection('overview');
+      case "profile":
+        setActiveSection("overview");
         break;
-      case 'change-password':
-        navigate('/member/change-password');
+      case "change-password":
+        navigate("/member/change-password");
         break;
-      case 'notifications':
-        setActiveSection('notifications');
+      case "notifications":
+        setActiveSection("notifications");
         break;
-      case 'settings':
-        setActiveSection('settings');
+      case "settings":
+        setActiveSection("settings");
         break;
-      case 'security':
-        setActiveSection('security');
+      case "security":
+        setActiveSection("security");
         break;
       default:
         break;
@@ -121,9 +121,9 @@ const Profile = () => {
   };
 
   const handleLogout = () => {
-    if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+    if (confirm("Bạn có chắc chắn muốn đăng xuất?")) {
       // TODO: Call logout API
-      navigate('/login');
+      navigate("/login");
     }
   };
 
@@ -164,17 +164,24 @@ const Profile = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <h1 className="text-2xl font-bold text-white">Thông tin tài khoản</h1>
           <div className="flex items-center gap-4">
-            <button className="p-2 hover:bg-amber-600 rounded-lg transition" title="Notifications">
+            <button
+              className="p-2 hover:bg-amber-600 rounded-lg transition"
+              title="Notifications"
+            >
               <Bell size={24} className="text-white" />
             </button>
-            <UserMenu userName={user.name} onNavigate={handleMenuNavigate} onLogout={handleLogout} />
+            <UserMenu
+              userName={user.name}
+              onNavigate={handleMenuNavigate}
+              onLogout={handleLogout}
+            />
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {activeSection === 'overview' && (
+        {activeSection === "overview" && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column: Avatar */}
             <div className="lg:col-span-1">
@@ -212,7 +219,7 @@ const Profile = () => {
           </div>
         )}
 
-        {activeSection === 'notifications' && (
+        {activeSection === "notifications" && (
           <div className="bg-white rounded-lg shadow-md p-8 max-w-2xl">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Thông báo</h2>
             <div className="text-center py-12">
@@ -222,7 +229,7 @@ const Profile = () => {
           </div>
         )}
 
-        {activeSection === 'settings' && (
+        {activeSection === "settings" && (
           <div className="bg-white rounded-lg shadow-md p-8 max-w-2xl">
             <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
               <Settings size={28} className="text-amber-700" />
@@ -231,8 +238,7 @@ const Profile = () => {
             <div className="space-y-4">
               <label className="flex items-center gap-3 p-4 hover:bg-gray-50 rounded-lg cursor-pointer">
                 <input type="checkbox" className="w-5 h-5" defaultChecked />
-                <span className="text-gray-700">
-Nhận email thông báo</span>
+                <span className="text-gray-700">Nhận email thông báo</span>
               </label>
               <label className="flex items-center gap-3 p-4 hover:bg-gray-50 rounded-lg cursor-pointer">
                 <input type="checkbox" className="w-5 h-5" defaultChecked />
@@ -240,23 +246,27 @@ Nhận email thông báo</span>
               </label>
               <label className="flex items-center gap-3 p-4 hover:bg-gray-50 rounded-lg cursor-pointer">
                 <input type="checkbox" className="w-5 h-5" />
-                <span className="text-gray-700">Bật chế độ tổi (dark mode)</span>
+                <span className="text-gray-700">
+                  Bật chế độ tổi (dark mode)
+                </span>
               </label>
             </div>
           </div>
         )}
 
-        {activeSection === 'security' && (
+        {activeSection === "security" && (
           <div className="bg-white rounded-lg shadow-md p-8 max-w-2xl">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Bảo mật</h2>
             <div className="space-y-4">
               <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                 <div>
                   <p className="font-medium text-gray-800">Mật khẩu</p>
-                  <p className="text-sm text-gray-500">Cập nhật mật khẩu của bạn</p>
+                  <p className="text-sm text-gray-500">
+                    Cập nhật mật khẩu của bạn
+                  </p>
                 </div>
                 <button
-                  onClick={() => navigate('/member/change-password')}
+                  onClick={() => navigate("/member/change-password")}
                   className="px-4 py-2 text-amber-700 hover:bg-amber-50 rounded-lg transition"
                 >
                   Thay đổi
@@ -264,8 +274,12 @@ Nhận email thông báo</span>
               </div>
               <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                 <div>
-                  <p className="font-medium text-gray-800">Xác thực hai yếu tố</p>
-                  <p className="text-sm text-gray-500">Tăng cường bảo mật tài khoản</p>
+                  <p className="font-medium text-gray-800">
+                    Xác thực hai yếu tố
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Tăng cường bảo mật tài khoản
+                  </p>
                 </div>
                 <button className="px-4 py-2 text-amber-700 hover:bg-amber-50 rounded-lg transition">
                   Bật

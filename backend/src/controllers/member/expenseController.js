@@ -9,14 +9,8 @@ import { supabase } from "../../config/supabase.js";
 export const proposeExpense = async (req, res) => {
   try {
     const userId = req.user.id;
-    const {
-      title,
-      amount,
-      category,
-      description,
-      expected_date,
-      priority,
-    } = req.body;
+    const { title, amount, category, description, expected_date, priority } =
+      req.body;
 
     // Validate required fields
     if (!title || !description) {

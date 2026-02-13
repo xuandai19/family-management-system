@@ -54,12 +54,17 @@ const UserProposeEventPage = () => {
   const validate = () => {
     const newErrors = {};
     if (!formData.title.trim()) newErrors.title = "Vui lòng nhập tên sự kiện";
-    if (!formData.description.trim()) newErrors.description = "Vui lòng nhập mô tả";
+    if (!formData.description.trim())
+      newErrors.description = "Vui lòng nhập mô tả";
     if (!formData.proposed_date) newErrors.proposed_date = "Vui lòng chọn ngày";
-    if (!formData.location.trim()) newErrors.location = "Vui lòng nhập địa điểm";
+    if (!formData.location.trim())
+      newErrors.location = "Vui lòng nhập địa điểm";
 
     // Check if date is in the future
-    if (formData.proposed_date && new Date(formData.proposed_date) < new Date()) {
+    if (
+      formData.proposed_date &&
+      new Date(formData.proposed_date) < new Date()
+    ) {
       newErrors.proposed_date = "Ngày sự kiện phải là ngày trong tương lai";
     }
 
@@ -98,7 +103,9 @@ const UserProposeEventPage = () => {
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle2 size={32} className="text-green-600" />
           </div>
-          <h2 className="text-xl font-bold text-gray-800 mb-2">Đề xuất thành công!</h2>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">
+            Đề xuất thành công!
+          </h2>
           <p className="text-gray-600 mb-4">
             Đề xuất sự kiện của bạn đã được gửi và đang chờ Admin phê duyệt.
           </p>
@@ -146,7 +153,9 @@ const UserProposeEventPage = () => {
                   onChange={handleChange}
                   placeholder="VD: Lễ Giỗ Tổ năm 2026"
                   className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all ${
-                    errors.title ? "border-red-300 bg-red-50" : "border-gray-200"
+                    errors.title
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-200"
                   }`}
                 />
               </div>
@@ -204,7 +213,9 @@ const UserProposeEventPage = () => {
                     value={formData.event_date}
                     onChange={handleChange}
                     className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all ${
-                      errors.event_date ? "border-red-300 bg-red-50" : "border-gray-200"
+                      errors.event_date
+                        ? "border-red-300 bg-red-50"
+                        : "border-gray-200"
                     }`}
                   />
                 </div>
@@ -217,7 +228,9 @@ const UserProposeEventPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Giờ bắt đầu</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Giờ bắt đầu
+                </label>
                 <div className="relative">
                   <Clock
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -251,7 +264,9 @@ const UserProposeEventPage = () => {
                   onChange={handleChange}
                   placeholder="VD: Nhà thờ họ - Xã ABC, Huyện XYZ"
                   className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all ${
-                    errors.location ? "border-red-300 bg-red-50" : "border-gray-200"
+                    errors.location
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-200"
                   }`}
                 />
               </div>
@@ -297,7 +312,9 @@ const UserProposeEventPage = () => {
                 placeholder="Mô tả về mục đích, nội dung và các hoạt động của sự kiện..."
                 rows={4}
                 className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all resize-none ${
-                  errors.description ? "border-red-300 bg-red-50" : "border-gray-200"
+                  errors.description
+                    ? "border-red-300 bg-red-50"
+                    : "border-gray-200"
                 }`}
               />
               {errors.description && (
@@ -310,7 +327,9 @@ const UserProposeEventPage = () => {
 
             {/* Notes */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Ghi chú thêm</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Ghi chú thêm
+              </label>
               <textarea
                 name="notes"
                 value={formData.notes}
@@ -328,9 +347,13 @@ const UserProposeEventPage = () => {
                 <div className="text-sm text-amber-800">
                   <p className="font-medium mb-1">Lưu ý:</p>
                   <ul className="list-disc list-inside space-y-1 text-amber-700">
-                    <li>Đề xuất sẽ được gửi đến Admin để xem xét và phê duyệt</li>
+                    <li>
+                      Đề xuất sẽ được gửi đến Admin để xem xét và phê duyệt
+                    </li>
                     <li>Thời gian phê duyệt thường từ 1-3 ngày làm việc</li>
-                    <li>Bạn sẽ nhận được thông báo khi đề xuất được phê duyệt</li>
+                    <li>
+                      Bạn sẽ nhận được thông báo khi đề xuất được phê duyệt
+                    </li>
                   </ul>
                 </div>
               </div>

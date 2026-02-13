@@ -75,27 +75,42 @@ function App() {
           <Route index element={<Navigate to="/member/dashboard" />} />
           <Route path="dashboard" element={<MemberDashboard />} />
           <Route path="family-tree" element={<MemberFamilyTreePage />} />
-          
+
           {/* Events */}
           <Route path="events" element={<MemberEventsPage />} />
           <Route path="propose-event" element={<MemberProposeEventPage />} />
-          
+
           {/* Fund & Finance */}
-          <Route path="fund-notifications" element={<MemberFundNotificationsPage />} />
-          <Route path="payment-history" element={<MemberPaymentHistoryPage />} />
+          <Route
+            path="fund-notifications"
+            element={<MemberFundNotificationsPage />}
+          />
+          <Route
+            path="payment-history"
+            element={<MemberPaymentHistoryPage />}
+          />
           <Route path="fund-report" element={<MemberFundReportPage />} />
-          <Route path="propose-expense" element={<MemberProposeExpensePage />} />
-          
+          <Route
+            path="propose-expense"
+            element={<MemberProposeExpensePage />}
+          />
+
           {/* Ancestral House */}
-          <Route path="ancestral-house" element={<MemberAncestralHousePage />} />
-          
+          <Route
+            path="ancestral-house"
+            element={<MemberAncestralHousePage />}
+          />
+
           {/* Posts */}
           <Route path="posts" element={<MemberPostsPage />} />
           <Route path="propose-post" element={<MemberProposePostPage />} />
-          
+
           {/* Profile & Others */}
           <Route path="profile" element={<MemberProfilePage />} />
-          <Route path="add-child-request" element={<MemberAddChildRequestPage />} />
+          <Route
+            path="add-child-request"
+            element={<MemberAddChildRequestPage />}
+          />
         </Route>
 
         {/* 5. KHÔNG TÌM THẤY TRANG */}

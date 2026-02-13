@@ -44,7 +44,7 @@ router.post(
   verifyToken,
   upload.single("image"),
   handleMulterError,
-  uploadImage
+  uploadImage,
 );
 
 // Upload nhiều ảnh (tối đa 10)
@@ -53,7 +53,7 @@ router.post(
   verifyToken,
   upload.array("images", 10),
   handleMulterError,
-  uploadMultipleImages
+  uploadMultipleImages,
 );
 
 // Xóa ảnh

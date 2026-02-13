@@ -20,7 +20,7 @@ export const getPublishedPosts = async (req, res) => {
           username,
           family_members (full_name, avatar_url)
         )
-      `
+      `,
       )
       .eq("status", "published")
       .order("created_at", { ascending: false })
@@ -59,7 +59,7 @@ export const getPostById = async (req, res) => {
           username,
           family_members (full_name, avatar_url)
         )
-      `
+      `,
       )
       .eq("id", id)
       .eq("status", "published")

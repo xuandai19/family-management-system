@@ -13,6 +13,10 @@ const router = express.Router();
 router.get("/stats", verifyToken, dashboardController.getDashboardStats);
 
 // GET /api/member/dashboard/upcoming-events - Lấy sự kiện sắp tới
-router.get("/upcoming-events", verifyToken, dashboardController.getUpcomingEvents);
+router.get(
+  "/upcoming-events",
+  verifyToken,
+  dashboardController.getUpcomingEvents,
+);
 
 export default router;

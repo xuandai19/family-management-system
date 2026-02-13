@@ -39,11 +39,11 @@ const UserDashboard = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Fetch stats and upcoming events in parallel
       const [statsResponse, eventsResponse] = await Promise.all([
         getDashboardStats().catch(() => null),
-        getUpcomingEvents(3).catch(() => null)
+        getUpcomingEvents(3).catch(() => null),
       ]);
 
       if (statsResponse?.data) {

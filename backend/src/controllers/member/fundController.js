@@ -25,7 +25,7 @@ export const getFundReport = async (req, res) => {
         `
         *,
         fund:funds (id, fund_name)
-      `
+      `,
       )
       .order("transaction_date", { ascending: false });
 
@@ -129,7 +129,7 @@ export const getMyPaymentHistory = async (req, res) => {
         `
         *,
         fund:funds (id, fund_name)
-      `
+      `,
       )
       .eq("contributor_id", memberId)
       .eq("type", "income")
@@ -175,7 +175,7 @@ export const getCollectionRoundDetail = async (req, res) => {
         .select("*")
         .eq("contributor_id", memberId)
         .eq("type", "income")
-        .ilike("description", `%${round?.title || ''}%`)
+        .ilike("description", `%${round?.title || ""}%`)
         .maybeSingle();
       myPayment = payment;
     }
@@ -185,11 +185,11 @@ export const getCollectionRoundDetail = async (req, res) => {
       .from("transactions")
       .select("amount")
       .eq("type", "income")
-      .ilike("description", `%${round?.title || ''}%`);
+      .ilike("description", `%${round?.title || ""}%`);
 
     const totalCollected = (totalData || []).reduce(
       (sum, c) => sum + (parseFloat(c.amount) || 0),
-      0
+      0,
     );
 
     res.json({
