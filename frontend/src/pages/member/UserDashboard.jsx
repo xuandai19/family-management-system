@@ -14,7 +14,7 @@ import {
   AlertCircle,
   Loader2,
 } from "lucide-react";
-import { getDashboardStats, getUpcomingEvents } from "../../services/memberApi";
+import { getDashboardStats, getUpcomingEvents } from "../../services/member";
 
 const UserDashboard = () => {
   const navigate = useNavigate();

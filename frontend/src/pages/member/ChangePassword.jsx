@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Eye, EyeOff, Lock, CheckCircle, AlertCircle } from "lucide-react";
-import { changePassword } from "../../services/memberApi";
+import { changePassword } from "../../services/member";
 
 const ChangePassword = ({ onSuccess = null }) => {
   const [formData, setFormData] = useState({

@@ -12,7 +12,7 @@ import {
   Share2,
   ExternalLink,
 } from "lucide-react";
-import { EVENT_TYPES } from "../../../services/eventApi";
+import { EVENT_TYPES } from "../../../services/admin/eventApi";
 
 // Format date helper
 const formatDate = (dateString) => {
@@ -142,11 +142,11 @@ const EventDetailModal = ({
       date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
 
     const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
-      event.title
+      event.title,
     )}&dates=${formatGoogleDate(startDate)}/${formatGoogleDate(
-      endDate
+      endDate,
     )}&details=${encodeURIComponent(
-      event.description || ""
+      event.description || "",
     )}&location=${encodeURIComponent(event.location || "")}`;
 
     window.open(googleCalendarUrl, "_blank");

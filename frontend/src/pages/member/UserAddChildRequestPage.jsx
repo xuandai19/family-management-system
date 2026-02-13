@@ -17,13 +17,12 @@ import {
   TreePine,
   Loader2,
 } from "lucide-react";
-import PageHeader from "./components/PageHeader";
-import QuickNavigation from "./components/QuickNavigation";
+import { PageHeader, QuickNavigation } from "../../components/member/common";
 import {
   submitChildRequest,
   getMyChildRequests,
   cancelChildRequest,
-} from "../../services/memberApi";
+} from "../../services/member";
 
 const UserAddChildRequestPage = () => {
   const navigate = useNavigate();

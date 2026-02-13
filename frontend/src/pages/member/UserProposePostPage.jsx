@@ -11,8 +11,8 @@ import {
   Type,
   AlignLeft,
 } from "lucide-react";
-import { PageHeader } from "./index";
-import { proposePost } from "../../services/memberApi";
+import { PageHeader } from "../../components/member/common";
+import { proposePost } from "../../services/member";
 
 const UserProposePostPage = () => {
   const navigate = useNavigate();

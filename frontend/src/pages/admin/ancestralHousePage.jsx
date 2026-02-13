@@ -14,7 +14,7 @@ import {
   createRenovationLog,
   updateRenovationLog,
   deleteRenovationLog,
-} from "../../services/ancestralHouseApi";
+} from "../../services/common/ancestralHouseApi";
 import {
   HeroSection,
   PhotoGallery,
@@ -25,6 +25,7 @@ import {
   RenovationFormModal,
   DeleteConfirmModal,
 } from "../../components/admin/AncestralHouse";
+import { useToast } from "../../hooks/admin";
 
 const AncestralHousePage = () => {
   // State cho nhà thờ tổ
@@ -41,7 +42,7 @@ const AncestralHousePage = () => {
   const [deletingItem, setDeletingItem] = useState(null);
 
   // Toast
-  const [toast, setToast] = useState(null);
+  const { toast, showToast } = useToast();
 
   // Fetch data
   const fetchData = useCallback(async () => {
@@ -60,7 +61,7 @@ const AncestralHousePage = () => {
       }
     } catch (error) {
       console.error("Lỗi tải dữ liệu:", error);
-      showToast("error", "Không thể tải dữ liệu");
+      showToast("Không thể tải dữ liệu", "error");
     }
     setLoading(false);
   }, []);
@@ -68,12 +69,6 @@ const AncestralHousePage = () => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  // Toast helper
-  const showToast = (type, message) => {
-    setToast({ type, message });
-    setTimeout(() => setToast(null), 3000);
-  };
 
   // Format currency
   const formatCurrency = (amount) => {
@@ -87,7 +82,7 @@ const AncestralHousePage = () => {
   // Calculate total renovation cost
   const totalCost = renovations.reduce(
     (sum, r) => sum + (parseFloat(r.cost) || 0),
-    0
+    0,
   );
 
   // ==========================================
@@ -100,11 +95,11 @@ const AncestralHousePage = () => {
       if (res.success) {
         setHouse(res.data);
         setShowHouseModal(false);
-        showToast("success", res.message || "Lưu thành công");
+        showToast(res.message || "Lưu thành công", "success");
       }
     } catch (error) {
       console.error("Lỗi lưu nhà thờ:", error);
-      showToast("error", "Không thể lưu thông tin");
+      showToast("Không thể lưu thông tin", "error");
     }
     setActionLoading(false);
   };
@@ -114,7 +109,7 @@ const AncestralHousePage = () => {
   // ==========================================
   const handleAddRenovation = () => {
     if (!house) {
-      showToast("error", "Vui lòng thêm thông tin nhà thờ tổ trước");
+      showToast("Vui lòng thêm thông tin nhà thờ tổ trước", "error");
       return;
     }
     setEditingRenovation(null);
@@ -140,11 +135,11 @@ const AncestralHousePage = () => {
         await fetchData();
         setShowRenovationModal(false);
         setEditingRenovation(null);
-        showToast("success", res.message || "Lưu thành công");
+        showToast(res.message || "Lưu thành công", "success");
       }
     } catch (error) {
       console.error("Lỗi lưu lịch sử tu sửa:", error);
-      showToast("error", "Không thể lưu lịch sử tu sửa");
+      showToast("Không thể lưu lịch sử tu sửa", "error");
     }
     setActionLoading(false);
   };
@@ -162,11 +157,11 @@ const AncestralHousePage = () => {
       const res = await deleteRenovationLog(deletingItem.id);
       if (res.success) {
         setRenovations((prev) => prev.filter((r) => r.id !== deletingItem.id));
-        showToast("success", "Xóa thành công");
+        showToast("Xóa thành công", "success");
       }
     } catch (error) {
       console.error("Lỗi xóa:", error);
-      showToast("error", "Không thể xóa");
+      showToast("Không thể xóa", "error");
     }
     setActionLoading(false);
     setShowDeleteModal(false);

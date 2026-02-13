@@ -1,7 +1,8 @@
-// Member Layout Components
-export { default as MemberLayout } from "./layout/MemberLayout";
-export { default as MemberSidebar } from "./layout/MemberSidebar";
+// Member Common Components
+export * from "./common";
 
-// Member Feature Components
+// Member Profile Components
+export * from "./profile";
+
+// Member FamilyTree Components
 export * from "./FamilyTree";
-export * from "./Profile";

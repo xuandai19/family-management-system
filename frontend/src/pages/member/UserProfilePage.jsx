@@ -17,9 +17,8 @@ import {
   AlertCircle,
   Loader2,
 } from "lucide-react";
-import PageHeader from "./components/PageHeader";
-import QuickNavigation from "./components/QuickNavigation";
-import { getMyProfile, updateMyProfile } from "../../services/memberApi";
+import { PageHeader, QuickNavigation } from "../../components/member/common";
+import { getMyProfile, updateMyProfile } from "../../services/member";
 
 const UserProfilePage = () => {
   const navigate = useNavigate();

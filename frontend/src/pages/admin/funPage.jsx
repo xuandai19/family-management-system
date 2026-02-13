@@ -18,7 +18,7 @@ import {
   createTransaction,
   deleteTransaction,
   getAllTransactions,
-} from "../../services/fundApi";
+} from "../../services/admin/fundApi";
 import {
   getAllCollectionRounds,
   createCollectionRound,
@@ -27,8 +27,8 @@ import {
   getPaymentsByRound,
   confirmPayment,
   deletePayment,
-} from "../../services/collectionApi";
-import { getAllFamilyMembers } from "../../services/adminApi";
+} from "../../services/admin/collectionApi";
+import { getAllFamilyMembers } from "../../services/admin/memberApi";
 import {
   FundStatsCards,
   FundList,
@@ -159,7 +159,7 @@ const FunPage = () => {
     setShowToast({ show: true, message, type });
     setTimeout(
       () => setShowToast({ show: false, message: "", type: "success" }),
-      3000
+      3000,
     );
   };
 
@@ -175,7 +175,7 @@ const FunPage = () => {
   // Tính toán thống kê
   const totalBalance = funds.reduce(
     (sum, f) => sum + parseFloat(f.balance || 0),
-    0
+    0,
   );
   const totalIncome = transactions
     .filter((t) => t.type === "income")
@@ -190,14 +190,14 @@ const FunPage = () => {
       (t) =>
         t.type === "income" &&
         t.description?.includes(
-          collectionRounds.find((r) => r.id === roundId)?.title || ""
-        )
+          collectionRounds.find((r) => r.id === roundId)?.title || "",
+        ),
     );
     return {
       totalPayers: roundPayments.length,
       totalCollected: roundPayments.reduce(
         (sum, t) => sum + parseFloat(t.amount || 0),
-        0
+        0,
       ),
     };
   };
@@ -314,7 +314,7 @@ const FunPage = () => {
         showNotification(
           transactionType === "income"
             ? "Ghi nhận thu thành công"
-            : "Ghi nhận chi thành công"
+            : "Ghi nhận chi thành công",
         );
         fetchData();
         setShowTransactionModal(false);
@@ -329,7 +329,7 @@ const FunPage = () => {
   const handleDeleteTransaction = async (transactionId) => {
     if (
       !window.confirm(
-        "Bạn có chắc muốn xóa giao dịch này? Số dư quỹ sẽ được hoàn lại."
+        "Bạn có chắc muốn xóa giao dịch này? Số dư quỹ sẽ được hoàn lại.",
       )
     )
       return;
@@ -397,7 +397,7 @@ const FunPage = () => {
       if (editingRound) {
         const res = await updateCollectionRound(
           editingRound.id,
-          collectionForm
+          collectionForm,
         );
         if (res.success) {
           showNotification("Cập nhật đợt thu thành công");
@@ -477,7 +477,7 @@ const FunPage = () => {
     let reportContent = "BÁO CÁO TÀI CHÍNH QUỸ DÒNG HỌ\n";
     reportContent += "=".repeat(50) + "\n\n";
     reportContent += `Ngày xuất báo cáo: ${new Date().toLocaleDateString(
-      "vi-VN"
+      "vi-VN",
     )}\n\n`;
 
     reportContent += "I. TỔNG QUAN\n";
@@ -488,7 +488,7 @@ const FunPage = () => {
     reportContent += "II. CHI TIẾT CÁC QUỸ\n";
     funds.forEach((fund, idx) => {
       reportContent += `${idx + 1}. ${fund.fund_name}: ${formatCurrency(
-        fund.balance
+        fund.balance,
       )}\n`;
       if (fund.description) reportContent += `   Mô tả: ${fund.description}\n`;
     });
@@ -497,9 +497,9 @@ const FunPage = () => {
     transactions.slice(0, 20).forEach((t, idx) => {
       const typeLabel = t.type === "income" ? "THU" : "CHI";
       reportContent += `${idx + 1}. [${typeLabel}] ${formatCurrency(
-        t.amount
+        t.amount,
       )} - ${t.description || "Không có mô tả"} (${formatDate(
-        t.transaction_date
+        t.transaction_date,
       )})\n`;
     });
 

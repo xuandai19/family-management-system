@@ -23,8 +23,9 @@ import {
   deletePost,
   approvePost,
   rejectPost,
-} from "../../services/postApi";
-import { uploadSingleImage } from "../../services/uploadApi";
+} from "../../services/admin/postApi";
+import { uploadSingleImage } from "../../services/common/uploadApi";
+import { useToast } from "../../hooks/admin";
 
 const CATEGORIES = {
   news: { label: "Tin tức", color: "bg-blue-100 text-blue-700" },
@@ -65,7 +66,7 @@ const PostsPage = () => {
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
-  const [toast, setToast] = useState(null);
+  const { toast, showToast } = useToast();
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -96,11 +97,6 @@ const PostsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const showToast = (message, type = "success") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
   };
 
   // Upload ảnh
@@ -202,7 +198,7 @@ const PostsPage = () => {
         post.excerpt?.toLowerCase().includes(searchTerm.toLowerCase());
       const matchCategory = !filterCategory || post.category === filterCategory;
       return matchSearch && matchCategory;
-    }
+    },
   );
 
   const formatDate = (date) => {

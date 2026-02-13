@@ -1,6 +1,6 @@
-// Admin Layout Components
-export { default as AdminLayout } from "./layout/AdminLayout";
-export { default as AdminSidebar } from "./layout/AdminSidebar";
+// Admin Layout Components (moved to src/layouts/admin/)
+export { default as AdminLayout } from "../../layouts/admin/AdminLayout";
+export { default as AdminSidebar } from "../../layouts/admin/AdminSidebar";
 
 // Admin Feature Components
 export * from "./AncestralHouse";

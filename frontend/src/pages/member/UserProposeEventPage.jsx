@@ -11,8 +11,8 @@ import {
   AlertCircle,
   CheckCircle2,
 } from "lucide-react";
-import { PageHeader } from "./index";
-import { proposeEvent } from "../../services/memberApi";
+import { PageHeader } from "../../components/member/common";
+import { proposeEvent } from "../../services/member";
 
 const UserProposeEventPage = () => {
   const navigate = useNavigate();

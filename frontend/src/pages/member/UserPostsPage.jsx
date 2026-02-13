@@ -14,8 +14,8 @@ import {
   Calendar,
   Tag,
 } from "lucide-react";
-import { PageHeader, QuickNavigation } from "./index";
-import { getMemberPosts, toggleLikePost } from "../../services/memberApi";
+import { PageHeader, QuickNavigation } from "../../components/member/common";
+import { getMemberPosts, toggleLikePost } from "../../services/member";
 
 const UserPostsPage = () => {
   const navigate = useNavigate();

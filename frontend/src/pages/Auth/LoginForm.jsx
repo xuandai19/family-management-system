@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { loginUser } from "../../services/authApi.js";
+import { loginUser } from "../../services/common/authApi.js";
 import { useNavigate } from "react-router-dom";
 import {
   LogIn,

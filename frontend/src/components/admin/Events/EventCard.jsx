@@ -10,7 +10,7 @@ import {
   Bell,
   Repeat,
 } from "lucide-react";
-import { EVENT_TYPES } from "../../../services/eventApi";
+import { EVENT_TYPES } from "../../../services/admin/eventApi";
 
 // Format date helper
 const formatDate = (dateString) => {

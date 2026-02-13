@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Home, GitBranch, X, Loader2 } from "lucide-react";
-import { getFamilyTree } from "../../services/familyTreeApi";
+import { getFamilyTree } from "../../services/common/familyTreeApi";
 import {
   FamilyNode,
   SearchBox,
@@ -60,7 +60,7 @@ const FamilyTreePage = () => {
 
       const delta = e.deltaY > 0 ? -0.1 : 0.1;
       setScale((prev) =>
-        Math.min(MAX_SCALE, Math.max(MIN_SCALE, prev + delta))
+        Math.min(MAX_SCALE, Math.max(MIN_SCALE, prev + delta)),
       );
     };
 

@@ -13,7 +13,8 @@ import {
   markAllAsRead,
   deleteNotification,
   getUnreadCount,
-} from "../../services/notifiApi";
+} from "../../services/admin/notifiApi";
+import { useToast } from "../../hooks/admin";
 
 const NotificationPage = () => {
   const [notifications, setNotifications] = useState([]);
@@ -24,7 +25,7 @@ const NotificationPage = () => {
   const [filterType, setFilterType] = useState("");
   const [selectedNotification, setSelectedNotification] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [toast, setToast] = useState(null);
+  const { toast, showToast } = useToast();
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -48,11 +49,6 @@ const NotificationPage = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const showToast = (message, type = "success") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
   };
 
   const handleMarkRead = async (id) => {

@@ -16,7 +16,7 @@ import {
   getRecentPending,
   getUpcomingEvents,
   getRecentActivities,
-} from "../../services/dashboardApi";
+} from "../../services/admin/dashboardApi";
 
 const Dashboard = () => {
   const navigate = useNavigate();

@@ -19,7 +19,7 @@ import {
   updateEvent,
   deleteEvent,
   EVENT_TYPES,
-} from "../../../services/eventApi";
+} from "../../../services/admin/eventApi";
 import EventCard from "./EventCard";
 import EventFormModal from "./EventFormModal";
 import EventDetailModal from "./EventDetailModal";
@@ -49,7 +49,7 @@ const EventList = () => {
       setEvents(data || []);
     } catch (err) {
       setError(
-        typeof err === "string" ? err : "Không thể tải danh sách sự kiện"
+        typeof err === "string" ? err : "Không thể tải danh sách sự kiện",
       );
       console.error(err);
     } finally {
@@ -77,7 +77,7 @@ const EventList = () => {
         (e) =>
           e.title?.toLowerCase().includes(term) ||
           e.description?.toLowerCase().includes(term) ||
-          e.location?.toLowerCase().includes(term)
+          e.location?.toLowerCase().includes(term),
       );
     }
 
@@ -155,7 +155,7 @@ const EventList = () => {
         // Update
         const updated = await updateEvent(selectedEvent.id, data);
         setEvents((prev) =>
-          prev.map((e) => (e.id === selectedEvent.id ? updated : e))
+          prev.map((e) => (e.id === selectedEvent.id ? updated : e)),
         );
       } else {
         // Create
@@ -442,8 +442,8 @@ const EventList = () => {
                 setCurrentMonth(
                   new Date(
                     currentMonth.getFullYear(),
-                    currentMonth.getMonth() - 1
-                  )
+                    currentMonth.getMonth() - 1,
+                  ),
                 )
               }
               className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
@@ -458,8 +458,8 @@ const EventList = () => {
                 setCurrentMonth(
                   new Date(
                     currentMonth.getFullYear(),
-                    currentMonth.getMonth() + 1
-                  )
+                    currentMonth.getMonth() + 1,
+                  ),
                 )
               }
               className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
@@ -512,16 +512,16 @@ const EventList = () => {
                             eventType.color === "pink"
                               ? "bg-pink-100 text-pink-700"
                               : eventType.color === "purple"
-                              ? "bg-purple-100 text-purple-700"
-                              : eventType.color === "blue"
-                              ? "bg-blue-100 text-blue-700"
-                              : eventType.color === "amber"
-                              ? "bg-amber-100 text-amber-700"
-                              : eventType.color === "green"
-                              ? "bg-green-100 text-green-700"
-                              : eventType.color === "gray"
-                              ? "bg-gray-100 text-gray-700"
-                              : "bg-slate-100 text-slate-700"
+                                ? "bg-purple-100 text-purple-700"
+                                : eventType.color === "blue"
+                                  ? "bg-blue-100 text-blue-700"
+                                  : eventType.color === "amber"
+                                    ? "bg-amber-100 text-amber-700"
+                                    : eventType.color === "green"
+                                      ? "bg-green-100 text-green-700"
+                                      : eventType.color === "gray"
+                                        ? "bg-gray-100 text-gray-700"
+                                        : "bg-slate-100 text-slate-700"
                           }`}
                         >
                           {eventType.icon} {event.title}

@@ -10,9 +10,8 @@ import {
   Bell,
   Wallet,
 } from "lucide-react";
-import PageHeader from "./components/PageHeader";
-import QuickNavigation from "./components/QuickNavigation";
-import { getMyPaymentHistory } from "../../services/memberApi";
+import { PageHeader, QuickNavigation } from "../../components/member/common";
+import { getMyPaymentHistory } from "../../services/member";
 
 const UserPaymentHistoryPage = () => {
   const navigate = useNavigate();

@@ -12,8 +12,8 @@ import {
   Search,
   Info,
 } from "lucide-react";
-import { PageHeader, QuickNavigation } from "./index";
-import { getMemberEvents } from "../../services/memberApi";
+import { PageHeader, QuickNavigation } from "../../components/member/common";
+import { getMemberEvents } from "../../services/member";
 
 const UserEventsPage = () => {
   const navigate = useNavigate();

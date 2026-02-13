@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { TreePine, ArrowRight, AlertCircle, ChevronLeft } from "lucide-react";
-import { registerUser } from "../../services/authApi.js";
+import { registerUser } from "../../services/common/authApi.js";
 import { useNavigate } from "react-router-dom";
 import LoginBg from "../../assets/imgs/Login.jpg";
 import StepAccount from "../../components/Register/Steps/StepAccount";

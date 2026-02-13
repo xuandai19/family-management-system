@@ -11,8 +11,8 @@ import {
   Calendar,
   Tag,
 } from "lucide-react";
-import { PageHeader } from "./index";
-import { proposeExpense } from "../../services/memberApi";
+import { PageHeader } from "../../components/member/common";
+import { proposeExpense } from "../../services/member";
 
 const UserProposeExpensePage = () => {
   const navigate = useNavigate();

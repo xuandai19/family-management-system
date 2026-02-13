@@ -11,8 +11,8 @@ import {
   Repeat,
   Loader2,
 } from "lucide-react";
-import { EVENT_TYPES } from "../../../services/eventApi";
-import { getAllMembers } from "../../../services/adminApi";
+import { EVENT_TYPES } from "../../../services/admin/eventApi";
+import { getAllMembers } from "../../../services/admin/memberApi";
 
 const EventFormModal = ({
   isOpen,

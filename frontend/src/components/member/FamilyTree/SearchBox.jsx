@@ -8,7 +8,7 @@ import {
   MapPin,
   GitBranch,
 } from "lucide-react";
-import { searchAll } from "../../../services/familyTreeApi";
+import { searchAll } from "../../../services/common/familyTreeApi";
 import { getUniqueAvatar } from "./Avatar";
 
 const SearchBox = ({ onHighlight }) => {
@@ -139,7 +139,7 @@ const SearchBox = ({ onHighlight }) => {
                   <img
                     src={getUniqueAvatar(
                       member.gender,
-                      member.full_name || member.name
+                      member.full_name || member.name,
                     )}
                     alt={member.full_name || member.name}
                     className="w-10 h-10 rounded-full object-cover border-2 border-blue-300 flex-shrink-0"
@@ -192,7 +192,7 @@ const SearchBox = ({ onHighlight }) => {
                   <img
                     src={getUniqueAvatar(
                       spouse.gender,
-                      spouse.full_name || spouse.name
+                      spouse.full_name || spouse.name,
                     )}
                     alt={spouse.full_name || spouse.name}
                     className="w-10 h-10 rounded-full object-cover border-2 border-pink-300 flex-shrink-0"

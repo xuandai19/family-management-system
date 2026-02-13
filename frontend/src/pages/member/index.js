@@ -22,11 +22,3 @@ export { default as UserProposeExpensePage } from "./UserProposeExpensePage";
 // New Pages - Posts
 export { default as UserPostsPage } from "./UserPostsPage";
 export { default as UserProposePostPage } from "./UserProposePostPage";
-
-// Components
-export { default as UserAvatar } from "./components/UserAvatar";
-export { default as UserInfo } from "./components/UserInfo";
-export { default as UserStats } from "./components/UserStats";
-export { default as UserMenu } from "./components/UserMenu";
-export { default as PageHeader } from "./components/PageHeader";
-export { default as QuickNavigation } from "./components/QuickNavigation";

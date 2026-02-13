@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Home, GitBranch, Loader2, Landmark, UserPlus } from "lucide-react";
-import { getFamilyTree } from "../../services/familyTreeApi";
+import { getFamilyTree } from "../../services/member";
 import {
   FamilyNode,
   SearchBox,
@@ -9,8 +9,7 @@ import {
   Legend,
   PersonInfoModal,
 } from "../../components/member/FamilyTree";
-import PageHeader from "./components/PageHeader";
-import QuickNavigation from "./components/QuickNavigation";
+import { PageHeader, QuickNavigation } from "../../components/member/common";
 
 const DEFAULT_ROOT_ID = 1;
 const MIN_SCALE = 0.3;

@@ -19,7 +19,7 @@ import {
   updateSpouse,
   deleteSpouse,
   getAllMembersWithSpouse,
-} from "../../services/adminApi";
+} from "../../services/admin/memberApi";
 import {
   FamilyStatsCards,
   FamilyMembersTable,
@@ -30,6 +30,7 @@ import {
   MemberFormModal,
   DeleteConfirmModal,
 } from "../../components/admin/userManagement";
+import { useToast } from "../../hooks/admin";
 
 const FamilyManagementPage = () => {
   const [familyMembers, setFamilyMembers] = useState([]);
@@ -59,7 +60,7 @@ const FamilyManagementPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   // Toast
-  const [toast, setToast] = useState(null);
+  const { toast, showToast } = useToast();
 
   useEffect(() => {
     fetchData();
@@ -95,11 +96,6 @@ const FamilyManagementPage = () => {
       showToast("Lỗi tải dữ liệu: " + error.message, "error");
     }
     setLoading(false);
-  };
-
-  const showToast = (message, type = "success") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
   };
 
   const handleView = (member, isSpouseType = false) => {

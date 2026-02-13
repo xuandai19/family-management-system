@@ -11,9 +11,8 @@ import {
   Wallet,
   CreditCard,
 } from "lucide-react";
-import PageHeader from "./components/PageHeader";
-import QuickNavigation from "./components/QuickNavigation";
-import { getCollectionNotifications } from "../../services/memberApi";
+import { PageHeader, QuickNavigation } from "../../components/member/common";
+import { getCollectionNotifications } from "../../services/member";
 
 const UserFundNotificationsPage = () => {
   const navigate = useNavigate();

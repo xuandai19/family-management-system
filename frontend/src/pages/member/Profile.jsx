@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import UserAvatar from "./components/UserAvatar";
-import UserInfo from "./components/UserInfo";
-import UserStats from "./components/UserStats";
-import UserMenu from "./components/UserMenu";
+import {
+  UserAvatar,
+  UserInfo,
+  UserStats,
+  UserMenu,
+} from "../../components/member/profile";
 import { Settings, Bell, LogOut, AlertCircle } from "lucide-react";
-import { getMyProfile, updateMyProfile } from "../../services/memberApi";
+import { getMyProfile, updateMyProfile } from "../../services/member";
 
 const Profile = () => {
   const navigate = useNavigate();

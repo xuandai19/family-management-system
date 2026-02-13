@@ -13,9 +13,8 @@ import {
   History,
   Plus,
 } from "lucide-react";
-import PageHeader from "./components/PageHeader";
-import QuickNavigation from "./components/QuickNavigation";
-import { getFundReport } from "../../services/memberApi";
+import { PageHeader, QuickNavigation } from "../../components/member/common";
+import { getFundReport } from "../../services/member";
 
 const UserFundReportPage = () => {
   const navigate = useNavigate();

@@ -13,12 +13,8 @@ import {
   Wallet,
   Plus,
 } from "lucide-react";
-import {
-  getAncestralHouse,
-  getRenovationLogs,
-} from "../../services/ancestralHouseApi";
-import PageHeader from "./components/PageHeader";
-import QuickNavigation from "./components/QuickNavigation";
+import { getAncestralHouse, getRenovationLogs } from "../../services/member";
+import { PageHeader, QuickNavigation } from "../../components/member/common";
 
 const UserAncestralHousePage = () => {
   const navigate = useNavigate();

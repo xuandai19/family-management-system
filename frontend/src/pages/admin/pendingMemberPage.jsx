@@ -13,7 +13,7 @@ import {
   getAllMembers,
   getAllSpouses,
   getAllUsers,
-} from "../../services/adminApi";
+} from "../../services/admin/memberApi";
 import {
   PendingStatsCards,
   PendingTable,
@@ -21,6 +21,7 @@ import {
   RejectModal,
   PendingMemberDetailModal,
 } from "../../components/admin/PendingMembers";
+import { useToast } from "../../hooks/admin";
 
 const PendingMemberPage = () => {
   const [pendingAccounts, setPendingAccounts] = useState([]);
@@ -41,7 +42,7 @@ const PendingMemberPage = () => {
   const [filterStatus, setFilterStatus] = useState("all");
 
   // Toast
-  const [toast, setToast] = useState(null);
+  const { toast, showToast } = useToast();
 
   useEffect(() => {
     fetchData();
@@ -64,11 +65,6 @@ const PendingMemberPage = () => {
       showToast("Lỗi tải dữ liệu: " + error.message, "error");
     }
     setLoading(false);
-  };
-
-  const showToast = (message, type = "success") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
   };
 
   const formatDate = (dateString) => {
