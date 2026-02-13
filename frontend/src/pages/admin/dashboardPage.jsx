@@ -290,7 +290,7 @@ const Dashboard = () => {
                 >
                   <div
                     className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${getEventTypeStyle(
-                      event.event_type
+                      event.event_type,
                     )}`}
                   >
                     <Calendar size={20} />

@@ -141,8 +141,8 @@ const PendingMemberDetailModal = ({
                 {account.gender === "Male"
                   ? "Nam"
                   : account.gender === "Female"
-                  ? "Nữ"
-                  : "-"}
+                    ? "Nữ"
+                    : "-"}
               </span>
             </div>
             <div className="flex items-center gap-2 text-slate-700">
@@ -195,7 +195,7 @@ const PendingMemberDetailModal = ({
                     ? ` (Đời ${item.generation_level})`
                     : ""}
                 </option>
-              )
+              ),
             )}
           </select>
         </div>

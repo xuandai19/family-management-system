@@ -81,8 +81,8 @@ const PendingMemberPage = () => {
     setPendingAccounts((prev) => prev.filter((acc) => acc.id !== id));
     setAllUsers((prev) =>
       prev.map((u) =>
-        u.id === id ? { ...u, status: "approved", role_id: 2 } : u
-      )
+        u.id === id ? { ...u, status: "approved", role_id: 2 } : u,
+      ),
     );
     setShowDetailModal(false);
     showToast("Duyệt thành công!");
@@ -91,7 +91,7 @@ const PendingMemberPage = () => {
   const handleRejected = (id) => {
     setPendingAccounts((prev) => prev.filter((acc) => acc.id !== id));
     setAllUsers((prev) =>
-      prev.map((u) => (u.id === id ? { ...u, status: "rejected" } : u))
+      prev.map((u) => (u.id === id ? { ...u, status: "rejected" } : u)),
     );
     setShowDetailModal(false);
     showToast("Đã từ chối yêu cầu!");

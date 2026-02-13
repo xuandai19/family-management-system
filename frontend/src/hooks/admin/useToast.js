@@ -20,7 +20,7 @@ export const useToast = (duration = 3000) => {
       setToast({ message, type });
       setTimeout(() => setToast(null), duration);
     },
-    [duration]
+    [duration],
   );
 
   const hideToast = useCallback(() => {

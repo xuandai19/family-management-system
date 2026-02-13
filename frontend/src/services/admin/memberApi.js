@@ -104,7 +104,7 @@ export const createFamilyMember = async (memberData) => {
 export const updateFamilyMember = async (memberId, memberData) => {
   const response = await api.put(
     `/admin/family-members/${memberId}`,
-    memberData
+    memberData,
   );
   return response.data;
 };
