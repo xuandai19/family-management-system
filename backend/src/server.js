@@ -56,26 +56,5 @@ app.use(
 );
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on: http://localhost:${PORT}`);
-  console.log(`
-📁 API Structure:
-├── /api/auth          - Authentication (login, register)
-├── /api/upload        - File uploads
-├── /api/admin/        - Admin routes
-│   ├── /dashboard     - Dashboard statistics
-│   ├── /events        - Event management
-│   ├── /funds         - Fund management
-│   ├── /collections   - Collection management
-│   ├── /notifications - Notification management
-│   ├── /posts         - Post management
-│   └── /ancestral-house - Ancestral house management
-└── /api/member/       - Member routes
-    ├── /family        - Family tree & search
-    ├── /events        - View events & propose
-    ├── /expenses      - Expense proposals
-    ├── /renovations   - Renovation proposals
-    ├── /posts         - View posts & propose
-    ├── /funds         - Fund reports & payments
-    └── /profile       - Personal profile
-  `);
+  console.log(`Server is running on port ${PORT}`);
 });

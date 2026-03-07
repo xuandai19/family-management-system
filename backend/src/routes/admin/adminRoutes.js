@@ -11,6 +11,7 @@ import {
   updateUserRole,
   // Family Members
   getAllMembersShort,
+  getUnlinkedMembers,
   getAllMembersWithSpouse,
   getAllFamilyMembers,
   createFamilyMember,
@@ -18,6 +19,7 @@ import {
   deleteFamilyMember,
   // Spouses
   getAllSpousesShort,
+  getUnlinkedSpouses,
   getAllSpousesFull,
   createSpouse,
   updateSpouse,
@@ -44,6 +46,9 @@ router.get("/pending-members", verifyToken, isAdmin, getPendingMemberRequests);
 
 // Lấy danh sách member trong gia phả (dropdown chọn)
 router.get("/members", verifyToken, isAdmin, getAllMembersShort);
+
+// Lấy danh sách member chưa liên kết tài khoản
+router.get("/members/unlinked", verifyToken, isAdmin, getUnlinkedMembers);
 
 // Lấy danh sách member kèm thông tin vợ/chồng
 router.get(
@@ -77,6 +82,9 @@ router.patch(
 
 // Lấy danh sách spouse (dropdown chọn)
 router.get("/spouses", verifyToken, isAdmin, getAllSpousesShort);
+
+// Lấy danh sách spouse chưa liên kết tài khoản
+router.get("/spouses/unlinked", verifyToken, isAdmin, getUnlinkedSpouses);
 
 // Duyệt tài khoản SPOUSE (admin chọn spouse_id)
 router.patch(

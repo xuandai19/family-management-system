@@ -15,6 +15,8 @@ import AncestralHousePage from "../pages/admin/ancestralHousePage";
 import SettingsPage from "../pages/admin/settingPage";
 import PostsPage from "../pages/admin/postsPage";
 import NotificationPage from "../pages/admin/notificationPage";
+import ReportPage from "../pages/admin/reportPage";
+import ProposalPage from "../pages/admin/proposalPage";
 
 /**
  * Admin Routes Configuration
@@ -32,6 +34,8 @@ const adminRoutes = (
     <Route path="ancestral-house" element={<AncestralHousePage />} />
     <Route path="posts" element={<PostsPage />} />
     <Route path="notifications" element={<NotificationPage />} />
+    <Route path="reports" element={<ReportPage />} />
+    <Route path="proposals" element={<ProposalPage />} />
     <Route path="settings" element={<SettingsPage />} />
   </Route>
 );

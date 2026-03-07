@@ -24,10 +24,10 @@ export const getMyProfile = async (req, res) => {
           phone,
           address,
           occupation,
-          generation,
+          generation_level,
           avatar_url,
           is_alive,
-          notes
+          bio
         )
       `,
       )
@@ -49,18 +49,19 @@ export const updateMyProfile = async (req, res) => {
     const userId = req.user.id;
     const { full_name, email, phone, address, bio, avatar_url } = req.body;
 
+    // Chỉ cập nhật những field được gửi lên (không undefined)
+    const profileUpdate = { updated_at: new Date().toISOString() };
+    if (full_name !== undefined) profileUpdate.full_name = full_name;
+    if (email !== undefined) profileUpdate.email = email;
+    if (phone !== undefined) profileUpdate.phone = phone;
+    if (address !== undefined) profileUpdate.address = address;
+    if (bio !== undefined) profileUpdate.bio = bio;
+    if (avatar_url !== undefined) profileUpdate.avatar_url = avatar_url;
+
     // Update profiles table
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .update({
-        full_name,
-        email,
-        phone,
-        address,
-        bio,
-        avatar_url,
-        updated_at: new Date().toISOString(),
-      })
+      .update(profileUpdate)
       .eq("id", userId)
       .select()
       .single();
@@ -69,15 +70,15 @@ export const updateMyProfile = async (req, res) => {
 
     // Cập nhật family_member nếu có liên kết
     if (profile.member_id) {
+      const memberUpdate = { updated_at: new Date().toISOString() };
+      if (full_name !== undefined) memberUpdate.full_name = full_name;
+      if (phone !== undefined) memberUpdate.phone = phone;
+      if (address !== undefined) memberUpdate.address = address;
+      if (avatar_url !== undefined) memberUpdate.avatar_url = avatar_url;
+
       await supabase
         .from("family_members")
-        .update({
-          full_name,
-          phone,
-          address,
-          avatar_url,
-          updated_at: new Date().toISOString(),
-        })
+        .update(memberUpdate)
         .eq("id", profile.member_id);
     }
 

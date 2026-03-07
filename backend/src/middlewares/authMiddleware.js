@@ -1,4 +1,4 @@
-import { supabase } from "../config/supabase.js";
+import { supabaseAdmin } from "../config/supabase.js";
 
 export const verifyToken = async (req, res, next) => {
   try {
@@ -10,11 +10,11 @@ export const verifyToken = async (req, res, next) => {
 
     const token = authHeader.split(" ")[1];
 
-    // 2. Xác thực token với Supabase
+    // 2. Xác thực token với Supabase Admin Client (ổn định hơn anon client)
     const {
       data: { user },
       error,
-    } = await supabase.auth.getUser(token);
+    } = await supabaseAdmin.auth.getUser(token);
 
     if (error || !user) {
       return res
@@ -32,7 +32,7 @@ export const verifyToken = async (req, res, next) => {
 
 export const isAdmin = async (req, res, next) => {
   // Lấy profile từ database để check role_id
-  const { data: profile, error } = await supabase
+  const { data: profile, error } = await supabaseAdmin
     .from("profiles")
     .select("role_id")
     .eq("id", req.user.id)

@@ -13,6 +13,7 @@ import notifiRoutes from "./notifiRoutes.js";
 import postRoutes from "./postRoutes.js";
 import ancestralHouseRoutes from "./ancestralHouseRoutes.js";
 import reportRoutes from "./reportRoutes.js";
+import proposalRoutes from "./proposalRoutes.js";
 
 const router = express.Router();
 
@@ -42,5 +43,8 @@ router.use("/ancestral-house", ancestralHouseRoutes);
 
 // Report
 router.use("/reports", reportRoutes);
+
+// Proposals (đề xuất từ thành viên)
+router.use("/proposals", proposalRoutes);
 
 export default router;

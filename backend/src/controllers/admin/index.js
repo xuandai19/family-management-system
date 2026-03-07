@@ -38,6 +38,7 @@ export { getAllUsers, deleteUser, updateUserRole } from "./userController.js";
 // Family Member Management
 export {
   getAllMembersShort,
+  getUnlinkedMembers,
   getAllMembersWithSpouse,
   getAllFamilyMembers,
   createFamilyMember,
@@ -48,8 +49,15 @@ export {
 // Spouse Management
 export {
   getAllSpousesShort,
+  getUnlinkedSpouses,
   getAllSpousesFull,
   createSpouse,
   updateSpouse,
   deleteSpouse,
 } from "./spouseController.js";
+
+// Report Management
+export * as reportController from "./reportController.js";
+
+// Proposal Management
+export * as proposalController from "./proposalController.js";

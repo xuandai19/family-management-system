@@ -26,6 +26,7 @@ const PersonCard = forwardRef(
         <AgeAvatar
           gender={person.gender}
           name={person.full_name || person.name}
+          avatarUrl={person.avatar_url}
         />
         <span className="text-xs font-bold text-slate-700 text-center mt-2">
           {person.full_name || person.name}
@@ -38,7 +39,7 @@ const PersonCard = forwardRef(
         </div>
       </div>
     );
-  }
+  },
 );
 
 export default PersonCard;

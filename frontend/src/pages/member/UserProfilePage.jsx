@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { PageHeader, QuickNavigation } from "../../components/member/common";
 import { getMyProfile, updateMyProfile } from "../../services/member";
+import { uploadSingleImage } from "../../services/common/uploadApi";
 
 const UserProfilePage = () => {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ const UserProfilePage = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editForm, setEditForm] = useState({});
   const [pendingRequests, setPendingRequests] = useState([]);
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
 
   // Các link liên quan
@@ -57,17 +59,20 @@ const UserProfilePage = () => {
       const response = await getMyProfile();
 
       if (response.success && response.data) {
+        const fm = response.data.family_member;
         const userProfile = {
           id: response.data.id,
-          full_name: response.data.full_name || "",
+          full_name: fm?.full_name || response.data.username || "",
           email: response.data.email || "",
-          phone: response.data.phone || "",
-          address: response.data.address || "",
-          date_of_birth: response.data.date_of_birth || "",
-          gender: response.data.gender || "male",
-          avatar_url: response.data.avatar_url || "",
-          generation: response.data.generation || 0,
+          phone: fm?.phone || response.data.phone || "",
+          address: fm?.address || response.data.address || "",
+          date_of_birth: fm?.birth_date || response.data.birth_date || "",
+          gender: (fm?.gender || response.data.gender || "").toLowerCase(),
+          avatar_url: fm?.avatar_url || response.data.avatar_url || "",
+          generation: fm?.generation_level || 0,
           role_id: response.data.role_id || 2,
+          bio: fm?.bio || "",
+          occupation: fm?.occupation || "",
         };
 
         setUser(userProfile);
@@ -100,13 +105,32 @@ const UserProfilePage = () => {
     setLoading(false);
   };
 
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarUploading(true);
+    try {
+      const uploadRes = await uploadSingleImage(file, "avatars");
+      const newUrl = uploadRes.data?.url || uploadRes.url;
+      if (uploadRes.success && newUrl) {
+        await updateMyProfile({ avatar_url: newUrl });
+        setUser((prev) => ({ ...prev, avatar_url: newUrl }));
+      }
+    } catch (err) {
+      console.error("Error uploading avatar:", err);
+      alert("Lỗi khi tải ảnh lên. Vui lòng thử lại.");
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
+
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
     return new Date(dateStr).toLocaleDateString("vi-VN");
   };
 
   const getGenderText = (gender) => {
-    switch (gender) {
+    switch ((gender || "").toLowerCase()) {
       case "male":
         return "Nam";
       case "female":
@@ -141,9 +165,7 @@ const UserProfilePage = () => {
       const response = await updateMyProfile(changes);
 
       if (response.success) {
-        alert(
-          response.message || "Đã gửi yêu cầu sửa đổi thông tin thành công!",
-        );
+        alert(response.message || "Đã cập nhật thông tin thành công!");
         setShowEditModal(false);
         // Refresh profile data
         fetchUserProfile();
@@ -151,8 +173,8 @@ const UserProfilePage = () => {
         alert(response.message || "Có lỗi xảy ra!");
       }
     } catch (err) {
-      console.error("Lỗi gửi yêu cầu:", err);
-      alert(err.response?.data?.message || "Có lỗi xảy ra khi gửi yêu cầu!");
+      console.error("Lỗi cập nhật:", err);
+      alert(err.response?.data?.message || "Có lỗi xảy ra khi cập nhật!");
     }
     setSubmitLoading(false);
   };
@@ -183,7 +205,7 @@ const UserProfilePage = () => {
       <PageHeader
         icon={User}
         title="Thông Tin Cá Nhân"
-        description="Xem và đề xuất sửa đổi thông tin của bạn"
+        description="Xem và chỉnh sửa thông tin của bạn"
         breadcrumbs={[{ label: "Thông tin cá nhân" }]}
       />
 
@@ -205,6 +227,23 @@ const UserProfilePage = () => {
                     <User size={64} className="text-white" />
                   )}
                 </div>
+                <label className="absolute bottom-0 right-0 w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-md cursor-pointer hover:bg-gray-100 transition">
+                  {avatarUploading ? (
+                    <Loader2
+                      size={16}
+                      className="text-[#8B6914] animate-spin"
+                    />
+                  ) : (
+                    <Camera size={16} className="text-[#8B6914]" />
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarUpload}
+                    disabled={avatarUploading}
+                  />
+                </label>
               </div>
               <h2 className="text-xl font-bold text-white mt-4">
                 {user?.full_name}
@@ -232,7 +271,7 @@ const UserProfilePage = () => {
                 className="w-full mt-6 py-3 bg-[#8B6914] hover:bg-[#6B5210] text-white font-medium rounded-lg transition flex items-center justify-center gap-2"
               >
                 <Edit3 size={18} />
-                Đề xuất sửa thông tin
+                Sửa thông tin
               </button>
             </div>
           </div>
@@ -277,56 +316,7 @@ const UserProfilePage = () => {
             </div>
           </div>
 
-          {/* Pending Requests */}
-          <div className="bg-white rounded-xl shadow-md p-6">
-            <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-              <Clock size={20} className="text-[#8B6914]" />
-              Yêu cầu đang chờ duyệt
-            </h3>
-            {pendingRequests.length > 0 ? (
-              <div className="space-y-3">
-                {pendingRequests.map((request) => (
-                  <div
-                    key={request.id}
-                    className="border border-amber-200 bg-amber-50 rounded-lg p-4"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium text-slate-800">
-                        {getFieldLabel(request.field)}
-                      </span>
-                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium">
-                        <Clock size={12} />
-                        Đang chờ
-                      </span>
-                    </div>
-                    <div className="text-sm">
-                      <span className="text-slate-500">Từ:</span>{" "}
-                      <span className="text-red-600 line-through">
-                        {request.old_value || "(trống)"}
-                      </span>
-                    </div>
-                    <div className="text-sm">
-                      <span className="text-slate-500">Thành:</span>{" "}
-                      <span className="text-green-600 font-medium">
-                        {request.new_value}
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-500 mt-2">
-                      Gửi ngày: {formatDate(request.created_at)}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <CheckCircle
-                  size={48}
-                  className="mx-auto text-green-300 mb-4"
-                />
-                <p className="text-slate-500">Không có yêu cầu nào đang chờ</p>
-              </div>
-            )}
-          </div>
+          {/* Pending Requests - reserved for future use */}
         </div>
       </div>
 
@@ -337,7 +327,7 @@ const UserProfilePage = () => {
             <div className="p-6 border-b border-slate-200">
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-semibold text-slate-800">
-                  Đề xuất sửa thông tin
+                  Sửa thông tin
                 </h3>
                 <button
                   onClick={() => setShowEditModal(false)}
@@ -347,7 +337,7 @@ const UserProfilePage = () => {
                 </button>
               </div>
               <p className="text-sm text-slate-500 mt-1">
-                Các thay đổi sẽ được gửi đến Admin để xét duyệt
+                Cập nhật thông tin cá nhân của bạn
               </p>
             </div>
 
@@ -437,7 +427,7 @@ const UserProfilePage = () => {
                 ) : (
                   <>
                     <Send size={18} />
-                    Gửi yêu cầu
+                    Lưu thay đổi
                   </>
                 )}
               </button>

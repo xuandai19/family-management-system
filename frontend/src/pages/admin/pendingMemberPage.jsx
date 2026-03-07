@@ -10,8 +10,8 @@ import {
 } from "lucide-react";
 import {
   getPendingMembers,
-  getAllMembers,
-  getAllSpouses,
+  getUnlinkedMembers,
+  getUnlinkedSpouses,
   getAllUsers,
 } from "../../services/admin/memberApi";
 import {
@@ -53,8 +53,8 @@ const PendingMemberPage = () => {
     try {
       const [pendingRes, membersRes, spousesRes, usersRes] = await Promise.all([
         getPendingMembers(),
-        getAllMembers(),
-        getAllSpouses(),
+        getUnlinkedMembers(),
+        getUnlinkedSpouses(),
         getAllUsers(),
       ]);
       if (pendingRes.success) setPendingAccounts(pendingRes.data || []);

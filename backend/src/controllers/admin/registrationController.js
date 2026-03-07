@@ -19,11 +19,13 @@ export const getPendingMemberRequests = async (req, res) => {
         phone,
         father_name,
         mother_name,
+        spouse_name,
         hometown,
+        registration_note,
         created_at,
         type,
         status
-      `
+      `,
       )
       .eq("role_id", 3)
       .eq("status", "pending")

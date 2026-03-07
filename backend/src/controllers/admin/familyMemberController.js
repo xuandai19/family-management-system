@@ -19,6 +19,67 @@ export const getAllMembersShort = async (req, res) => {
   }
 };
 
+// Lấy thành viên chưa liên kết tài khoản (cho dropdown duyệt đăng ký)
+export const getUnlinkedMembers = async (req, res) => {
+  try {
+    // Lấy tất cả member_id đã liên kết trong profiles
+    const { data: linkedProfiles, error: profileError } = await supabase
+      .from("profiles")
+      .select("member_id")
+      .not("member_id", "is", null);
+
+    if (profileError) throw profileError;
+
+    const linkedMemberIds = linkedProfiles.map((p) => p.member_id);
+
+    // Lấy tất cả members kèm thông tin cha mẹ
+    let query = supabase
+      .from("family_members")
+      .select(
+        "id, full_name, generation_level, gender, birth_date, father_id, mother_id",
+      )
+      .order("full_name", { ascending: true });
+
+    // Lọc bỏ những member đã liên kết
+    if (linkedMemberIds.length > 0) {
+      query = query.not("id", "in", `(${linkedMemberIds.join(",")})`);
+    }
+
+    const { data: members, error: membersError } = await query;
+    if (membersError) throw membersError;
+
+    // Lấy tên cha mẹ cho từng member
+    const parentIds = [
+      ...new Set(
+        members.flatMap((m) => [m.father_id, m.mother_id]).filter(Boolean),
+      ),
+    ];
+
+    let parentMap = {};
+    if (parentIds.length > 0) {
+      const { data: parents } = await supabase
+        .from("family_members")
+        .select("id, full_name")
+        .in("id", parentIds);
+      if (parents) {
+        parents.forEach((p) => {
+          parentMap[p.id] = p.full_name;
+        });
+      }
+    }
+
+    const enrichedMembers = members.map((m) => ({
+      ...m,
+      father_name: parentMap[m.father_id] || null,
+      mother_name: parentMap[m.mother_id] || null,
+    }));
+
+    return res.status(200).json({ success: true, data: enrichedMembers });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 // Lấy tất cả thành viên kèm thông tin vợ/chồng (qua marriages)
 export const getAllMembersWithSpouse = async (req, res) => {
   try {
@@ -32,7 +93,7 @@ export const getAllMembersWithSpouse = async (req, res) => {
 
     // Lấy tất cả marriages với thông tin spouse
     const { data: marriages, error: marriagesError } = await supabase.from(
-      "marriages"
+      "marriages",
     ).select(`
         member_id,
         spouse_id,
@@ -91,7 +152,7 @@ export const getAllFamilyMembers = async (req, res) => {
         bio,
         is_public,
         created_at
-      `
+      `,
       )
       .order("generation_level", { ascending: true })
       .order("full_name", { ascending: true });

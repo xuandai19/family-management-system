@@ -9,7 +9,7 @@ import {
   GitBranch,
 } from "lucide-react";
 import { searchAll } from "../../../services/common/familyTreeApi";
-import { getUniqueAvatar } from "./Avatar";
+import { getAvatarSrc } from "./Avatar";
 
 const SearchBox = ({ onHighlight }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -137,7 +137,8 @@ const SearchBox = ({ onHighlight }) => {
                   className="px-3 py-2 flex items-center gap-3 hover:bg-slate-50 transition-colors border-b last:border-b-0"
                 >
                   <img
-                    src={getUniqueAvatar(
+                    src={getAvatarSrc(
+                      member.avatar_url,
                       member.gender,
                       member.full_name || member.name,
                     )}
@@ -190,7 +191,8 @@ const SearchBox = ({ onHighlight }) => {
                   className="px-3 py-2 flex items-center gap-3 hover:bg-slate-50 transition-colors border-b last:border-b-0"
                 >
                   <img
-                    src={getUniqueAvatar(
+                    src={getAvatarSrc(
+                      spouse.avatar_url,
                       spouse.gender,
                       spouse.full_name || spouse.name,
                     )}

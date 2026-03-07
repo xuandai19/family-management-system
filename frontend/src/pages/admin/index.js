@@ -12,3 +12,5 @@ export { default as PendingMemberPage } from "./pendingMemberPage";
 export { default as PostsPage } from "./postsPage";
 export { default as SettingsPage } from "./settingPage";
 export { default as UserManagementPage } from "./userManagent";
+export { default as ReportPage } from "./reportPage";
+export { default as ProposalPage } from "./proposalPage";

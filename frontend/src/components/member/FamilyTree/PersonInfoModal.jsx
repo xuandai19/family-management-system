@@ -62,7 +62,7 @@ const PersonInfoModal = ({ person, isSpouse, spouseOf, onClose }) => {
               <AgeAvatar
                 gender={person.gender}
                 name={person.full_name || person.name}
-                size="large"
+                avatarUrl={person.avatar_url}
               />
             </div>
             <h3 className="text-xl font-bold text-center">
@@ -92,8 +92,8 @@ const PersonInfoModal = ({ person, isSpouse, spouseOf, onClose }) => {
               person.gender === "male"
                 ? "Nam"
                 : person.gender === "female"
-                ? "Nữ"
-                : "Chưa cập nhật"
+                  ? "Nữ"
+                  : "Chưa cập nhật"
             }
           />
 

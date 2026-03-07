@@ -20,4 +20,21 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Xử lý response lỗi 401 - token hết hạn hoặc không hợp lệ
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Xóa thông tin auth cũ
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("user");
+      // Redirect về trang login (tránh redirect vòng lặp)
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
+    }
+    return Promise.reject(error);
+  },
+);
+
 export default api;

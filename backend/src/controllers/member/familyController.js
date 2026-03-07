@@ -79,6 +79,36 @@ export const getFamilyTree = async (req, res) => {
 
     if (marriagesError) throw marriagesError;
 
+    // Lấy avatar từ profiles (tài khoản đã liên kết) để bổ sung cho members/spouses chưa có avatar
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("member_id, spouse_id, avatar_url")
+      .not("avatar_url", "is", null);
+
+    // Gắn avatar từ profiles vào members nếu member chưa có avatar_url
+    if (profiles) {
+      const memberAvatarMap = new Map();
+      const spouseAvatarMap = new Map();
+      profiles.forEach((p) => {
+        if (p.member_id && p.avatar_url)
+          memberAvatarMap.set(p.member_id, p.avatar_url);
+        if (p.spouse_id && p.avatar_url)
+          spouseAvatarMap.set(p.spouse_id, p.avatar_url);
+      });
+
+      allMembers.forEach((m) => {
+        if (!m.avatar_url && memberAvatarMap.has(m.id)) {
+          m.avatar_url = memberAvatarMap.get(m.id);
+        }
+      });
+
+      allSpouses.forEach((s) => {
+        if (!s.avatar_url && spouseAvatarMap.has(s.id)) {
+          s.avatar_url = spouseAvatarMap.get(s.id);
+        }
+      });
+    }
+
     const tree = await buildTree(
       allMembers,
       allMarriages || [],

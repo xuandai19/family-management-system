@@ -14,6 +14,8 @@ import {
   House,
   Wallet,
   FileText,
+  FileWarning,
+  ClipboardList,
 } from "lucide-react";
 import LoginBg from "../../assets/imgs/Login.jpg";
 import { getPendingMembers } from "../../services/admin/memberApi";
@@ -98,6 +100,18 @@ const AdminSidebar = () => {
       label: "Thông báo",
       icon: Bell,
       path: "/admin/notifications",
+    },
+    {
+      id: "reports",
+      label: "Báo cáo & Phản hồi",
+      icon: FileWarning,
+      path: "/admin/reports",
+    },
+    {
+      id: "proposals",
+      label: "Duyệt đề xuất",
+      icon: ClipboardList,
+      path: "/admin/proposals",
     },
     {
       id: "settings",

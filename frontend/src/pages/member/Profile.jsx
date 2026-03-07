@@ -8,6 +8,7 @@ import {
 } from "../../components/member/profile";
 import { Settings, Bell, LogOut, AlertCircle } from "lucide-react";
 import { getMyProfile, updateMyProfile } from "../../services/member";
+import { uploadSingleImage } from "../../services/common/uploadApi";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -71,10 +72,14 @@ const Profile = () => {
 
   const handleImageChange = async (file) => {
     try {
-      // TODO: Upload image to server via uploadApi
-      console.log("Image uploaded:", file);
+      const uploadRes = await uploadSingleImage(file, "avatars");
+      if (uploadRes.success && uploadRes.url) {
+        await updateMyProfile({ avatar_url: uploadRes.url });
+        setUser((prev) => ({ ...prev, avatar: uploadRes.url }));
+      }
     } catch (err) {
       console.error("Error uploading image:", err);
+      alert("Lỗi khi tải ảnh lên. Vui lòng thử lại.");
     }
   };
 

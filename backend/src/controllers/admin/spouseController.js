@@ -19,6 +19,36 @@ export const getAllSpousesShort = async (req, res) => {
   }
 };
 
+// Lấy spouse chưa liên kết tài khoản (cho dropdown duyệt đăng ký)
+export const getUnlinkedSpouses = async (req, res) => {
+  try {
+    const { data: linkedProfiles, error: profileError } = await supabase
+      .from("profiles")
+      .select("spouse_id")
+      .not("spouse_id", "is", null);
+
+    if (profileError) throw profileError;
+
+    const linkedSpouseIds = linkedProfiles.map((p) => p.spouse_id);
+
+    let query = supabase
+      .from("spouses")
+      .select("id, full_name, gender, birth_date")
+      .order("full_name", { ascending: true });
+
+    if (linkedSpouseIds.length > 0) {
+      query = query.not("id", "in", `(${linkedSpouseIds.join(",")})`);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    return res.status(200).json({ success: true, data });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 // Lấy tất cả spouse - đầy đủ
 export const getAllSpousesFull = async (req, res) => {
   try {
@@ -41,7 +71,7 @@ export const getAllSpousesFull = async (req, res) => {
         avatar_url,
         bio,
         created_at
-      `
+      `,
       )
       .order("full_name", { ascending: true });
 

@@ -16,6 +16,12 @@ export const getAllMembers = async () => {
   return response.data;
 };
 
+// Lấy thành viên chưa liên kết tài khoản (cho dropdown duyệt)
+export const getUnlinkedMembers = async () => {
+  const response = await api.get("/admin/members/unlinked");
+  return response.data;
+};
+
 // Duyệt tài khoản - liên kết với thành viên
 export const approveProfile = async (profileId, memberId) => {
   const response = await api.patch(`/admin/approve-member/${profileId}`, {
@@ -43,6 +49,12 @@ export const approveSpouseProfile = async (profileId, spouseId) => {
 // Lấy tất cả spouse (vợ/chồng) cho dropdown
 export const getAllSpouses = async () => {
   const response = await api.get("/admin/spouses");
+  return response.data;
+};
+
+// Lấy spouse chưa liên kết tài khoản (cho dropdown duyệt)
+export const getUnlinkedSpouses = async () => {
+  const response = await api.get("/admin/spouses/unlinked");
   return response.data;
 };
 

@@ -23,6 +23,12 @@ export * from "./postApi";
 // Notifications
 export * from "./notifiApi";
 
+// Reports
+export * from "./reportApi";
+
+// Proposals
+export * from "./proposalApi";
+
 // Re-export shared services used by admin pages
 export {
   getAncestralHouse,

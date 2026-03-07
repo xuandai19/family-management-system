@@ -11,3 +11,5 @@ export * from "./Notifi";
 export * from "./PendingMembers";
 export * from "./Post";
 export * from "./userManagement";
+export * from "./Report";
+export * from "./Proposal";
