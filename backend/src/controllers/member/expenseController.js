@@ -9,8 +9,15 @@ import { supabase } from "../../config/supabase.js";
 export const proposeExpense = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { title, amount, category, description, expected_date, priority } =
-      req.body;
+    const {
+      title,
+      amount,
+      category,
+      description,
+      purpose,
+      urgency,
+      attachments,
+    } = req.body;
 
     // Validate required fields
     if (!title || !description) {
@@ -20,8 +27,18 @@ export const proposeExpense = async (req, res) => {
       });
     }
 
-    // Parse amount (remove commas)
-    const parsedAmount = amount ? parseInt(amount.replace(/,/g, "")) : null;
+    // Parse amount from number or formatted string
+    const parsedAmount =
+      typeof amount === "number"
+        ? amount
+        : Number(String(amount || "").replace(/,/g, ""));
+
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Số tiền không hợp lệ",
+      });
+    }
 
     const { data, error } = await supabase
       .from("expense_proposals")
@@ -31,10 +48,11 @@ export const proposeExpense = async (req, res) => {
           amount: parsedAmount,
           category: category || "other",
           description,
-          expected_date: expected_date || null,
-          priority: priority || "normal",
+          purpose: purpose || null,
+          urgency: urgency || "normal",
+          attachments: Array.isArray(attachments) ? attachments : [],
           proposed_by: userId,
-          status: "pending", // pending, approved, rejected
+          status: "pending",
         },
       ])
       .select()

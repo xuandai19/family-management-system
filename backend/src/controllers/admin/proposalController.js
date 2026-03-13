@@ -186,6 +186,59 @@ export const approveExpenseProposal = async (req, res) => {
     const { id } = req.params;
     const { review_notes } = req.body;
 
+    const { data: proposal, error: proposalError } = await supabase
+      .from("expense_proposals")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (proposalError || !proposal) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy đề xuất chi phí",
+      });
+    }
+
+    if (proposal.status !== "pending") {
+      return res.status(400).json({
+        success: false,
+        message: "Đề xuất này đã được xử lý",
+      });
+    }
+
+    // Chọn quỹ mặc định: quỹ đầu tiên theo tên
+    const { data: fund, error: fundError } = await supabase
+      .from("funds")
+      .select("id, fund_name, balance")
+      .order("fund_name", { ascending: true })
+      .limit(1)
+      .single();
+
+    if (fundError || !fund) {
+      return res.status(400).json({
+        success: false,
+        message: "Không có quỹ để trừ tiền khi duyệt đề xuất chi phí",
+      });
+    }
+
+    const amount = Number(proposal.amount || 0);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Số tiền đề xuất không hợp lệ",
+      });
+    }
+
+    const currentBalance = Number(fund.balance || 0);
+    const newBalance = currentBalance - amount;
+
+    if (newBalance < 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Số dư quỹ "${fund.fund_name}" không đủ để duyệt khoản chi này`,
+      });
+    }
+
     const { data, error } = await supabase
       .from("expense_proposals")
       .update({
@@ -195,11 +248,69 @@ export const approveExpenseProposal = async (req, res) => {
         reviewed_at: new Date().toISOString(),
       })
       .eq("id", id)
+      .eq("status", "pending")
       .select()
       .single();
 
     if (error) throw error;
-    res.json({ success: true, message: "Đã duyệt đề xuất chi phí", data });
+
+    const { data: transaction, error: txError } = await supabase
+      .from("transactions")
+      .insert([
+        {
+          fund_id: fund.id,
+          amount,
+          type: "expense",
+          category: proposal.category || "expense_proposal",
+          description: `Chi theo đề xuất #${proposal.id}: ${proposal.title}`,
+          created_by: req.user.id,
+        },
+      ])
+      .select("id")
+      .single();
+
+    if (txError) {
+      await supabase
+        .from("expense_proposals")
+        .update({
+          status: "pending",
+          reviewed_by: null,
+          review_notes: null,
+          reviewed_at: null,
+        })
+        .eq("id", id);
+      throw txError;
+    }
+
+    const { error: fundUpdateError } = await supabase
+      .from("funds")
+      .update({ balance: newBalance })
+      .eq("id", fund.id);
+
+    if (fundUpdateError) {
+      await supabase.from("transactions").delete().eq("id", transaction.id);
+      await supabase
+        .from("expense_proposals")
+        .update({
+          status: "pending",
+          reviewed_by: null,
+          review_notes: null,
+          reviewed_at: null,
+        })
+        .eq("id", id);
+      throw fundUpdateError;
+    }
+
+    res.json({
+      success: true,
+      message: "Đã duyệt đề xuất chi phí và trừ vào quỹ",
+      data,
+      meta: {
+        fund_id: fund.id,
+        deducted_amount: amount,
+        new_balance: newBalance,
+      },
+    });
   } catch (error) {
     console.error("Error approving expense proposal:", error);
     res.status(500).json({ success: false, message: error.message });

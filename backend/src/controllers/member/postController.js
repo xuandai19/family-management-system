@@ -5,12 +5,56 @@
 
 import { supabaseAdmin } from "../../config/supabase.js";
 
+const isMissingPostCommentsTable = (error) => {
+  const msg = String(error?.message || "");
+  return msg.includes("Could not find the table 'public.post_comments'");
+};
+
+const COMMENT_DOC_PREFIX = "post_comment:";
+
+const parseCommentPostIdFromTitle = (title) => {
+  const raw = String(title || "");
+  if (!raw.startsWith(COMMENT_DOC_PREFIX)) return null;
+  const parts = raw.split(":");
+  const postId = Number(parts[1]);
+  return Number.isFinite(postId) ? postId : null;
+};
+
+const safeLoadCommentRows = async (postIds) => {
+  if (!postIds || postIds.length === 0) return [];
+
+  const { data, error } = await supabaseAdmin
+    .from("post_comments")
+    .select("post_id")
+    .in("post_id", postIds);
+
+  if (error) {
+    if (isMissingPostCommentsTable(error)) {
+      const { data: docs, error: docsError } = await supabaseAdmin
+        .from("documents")
+        .select("id, title")
+        .eq("document_type", "other")
+        .like("title", `${COMMENT_DOC_PREFIX}%`);
+
+      if (docsError) throw docsError;
+
+      const postIdSet = new Set(postIds.map((id) => Number(id)));
+      return (docs || [])
+        .map((d) => ({ post_id: parseCommentPostIdFromTitle(d.title) }))
+        .filter((d) => d.post_id && postIdSet.has(d.post_id));
+    }
+    throw error;
+  }
+
+  return data || [];
+};
+
 const enrichPosts = async (posts, userId) => {
   if (!posts || posts.length === 0) return [];
 
   const postIds = posts.map((p) => p.id);
 
-  const [{ data: likes }, { data: myLikes }, { data: comments }] =
+  const [{ data: likes }, { data: myLikes }, comments] =
     await Promise.all([
       supabaseAdmin.from("post_likes").select("post_id").in("post_id", postIds),
       supabaseAdmin
@@ -18,10 +62,7 @@ const enrichPosts = async (posts, userId) => {
         .select("post_id")
         .in("post_id", postIds)
         .eq("user_id", userId),
-      supabaseAdmin
-        .from("post_comments")
-        .select("post_id")
-        .in("post_id", postIds),
+      safeLoadCommentRows(postIds),
     ]);
 
   const likeCountByPost = (likes || []).reduce((acc, row) => {
@@ -408,6 +449,44 @@ export const getPostComments = async (req, res) => {
       .eq("post_id", id)
       .order("created_at", { ascending: true });
 
+    if (error && isMissingPostCommentsTable(error)) {
+      const { data: fallbackData, error: fallbackError } = await supabaseAdmin
+        .from("documents")
+        .select(
+          `
+          id,
+          title,
+          content,
+          uploaded_by,
+          created_at,
+          user:profiles!documents_uploaded_by_fkey(
+            id,
+            username,
+            avatar_url,
+            family_members(full_name, avatar_url)
+          )
+        `,
+        )
+        .eq("document_type", "other")
+        .like("title", `${COMMENT_DOC_PREFIX}${Number(id)}:%`)
+        .order("created_at", { ascending: true });
+
+      if (fallbackError) throw fallbackError;
+
+      const normalized = (fallbackData || []).map((item) => ({
+        id: item.id,
+        post_id: Number(id),
+        user_id: item.uploaded_by,
+        content: item.content,
+        parent_id: null,
+        created_at: item.created_at,
+        updated_at: item.created_at,
+        user: item.user || null,
+      }));
+
+      return res.json({ success: true, data: normalized });
+    }
+
     if (error) throw error;
 
     res.json({ success: true, data: data || [] });
@@ -473,12 +552,77 @@ export const addPostComment = async (req, res) => {
       )
       .single();
 
+    if (error && isMissingPostCommentsTable(error)) {
+      const fallbackTitle = `${COMMENT_DOC_PREFIX}${Number(id)}:${Date.now()}`;
+
+      const { data: fallbackInsert, error: fallbackInsertError } =
+        await supabaseAdmin
+          .from("documents")
+          .insert([
+            {
+              title: fallbackTitle,
+              document_type: "other",
+              content: content.trim(),
+              uploaded_by: userId,
+            },
+          ])
+          .select(
+            `
+            id,
+            title,
+            content,
+            uploaded_by,
+            created_at,
+            user:profiles!documents_uploaded_by_fkey(
+              id,
+              username,
+              avatar_url,
+              family_members(full_name, avatar_url)
+            )
+          `,
+          )
+          .single();
+
+      if (fallbackInsertError) throw fallbackInsertError;
+
+      const { count: fallbackCount, error: fallbackCountError } =
+        await supabaseAdmin
+          .from("documents")
+          .select("*", { count: "exact", head: true })
+          .eq("document_type", "other")
+          .like("title", `${COMMENT_DOC_PREFIX}${Number(id)}:%`);
+
+      if (fallbackCountError) throw fallbackCountError;
+
+      return res.status(201).json({
+        success: true,
+        message: "Đã thêm bình luận",
+        data: {
+          id: fallbackInsert.id,
+          post_id: Number(id),
+          user_id: fallbackInsert.uploaded_by,
+          content: fallbackInsert.content,
+          parent_id: null,
+          created_at: fallbackInsert.created_at,
+          updated_at: fallbackInsert.created_at,
+          user: fallbackInsert.user || null,
+        },
+        meta: {
+          comment_count: fallbackCount || 0,
+        },
+      });
+    }
+
     if (error) throw error;
 
-    const { count } = await supabaseAdmin
+    const { count, error: countError } = await supabaseAdmin
       .from("post_comments")
       .select("*", { count: "exact", head: true })
       .eq("post_id", id);
+
+    if (countError && !isMissingPostCommentsTable(countError)) {
+      throw countError;
+    }
 
     res.status(201).json({
       success: true,

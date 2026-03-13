@@ -1,4 +1,19 @@
-import { supabase } from "../../config/supabase.js";
+import { supabase, supabaseAdmin } from "../../config/supabase.js";
+
+const normalizeGenderForFamilyMember = (value) => {
+  if (value === null || value === undefined || value === "") return null;
+
+  const raw = String(value).trim().toLowerCase();
+  if (["male", "nam", "m"].includes(raw)) return "Male";
+  if (["female", "nu", "nữ", "f"].includes(raw)) return "Female";
+  if (["other", "khac", "khác", "o"].includes(raw)) return "Other";
+
+  if (["Male", "Female", "Other"].includes(String(value))) {
+    return String(value);
+  }
+
+  return null;
+};
 
 // ===============================
 // QUẢN LÝ YÊU CẦU ĐĂNG KÝ
@@ -247,7 +262,7 @@ export const getAddMemberRequests = async (req, res) => {
   try {
     const { status = "pending" } = req.query;
 
-    let query = supabase
+    let query = supabaseAdmin
       .from("update_requests")
       .select(
         `
@@ -260,8 +275,8 @@ export const getAddMemberRequests = async (req, res) => {
         admin_note,
         created_at,
         updated_at,
-        requester:requester_id (id, username, email, gender),
-        target_member:target_member_id (id, full_name, generation_level)
+        requester:profiles!update_requests_requester_id_fkey(id, username, email, gender),
+        target_member:family_members!update_requests_target_member_id_fkey(id, full_name, generation_level)
       `,
       )
       .eq("request_type", "ADD_MEMBER")
@@ -286,7 +301,11 @@ export const approveAddMemberRequest = async (req, res) => {
     const { requestId } = req.params;
     const { adminNote } = req.body;
 
-    const { data: request, error: requestError } = await supabase
+    if (!req.user?.id) {
+      return res.status(401).json({ error: "Phiên đăng nhập không hợp lệ" });
+    }
+
+    const { data: request, error: requestError } = await supabaseAdmin
       .from("update_requests")
       .select(
         `
@@ -296,7 +315,7 @@ export const approveAddMemberRequest = async (req, res) => {
         request_type,
         new_data,
         status,
-        requester:requester_id (id, gender)
+        requester:profiles!update_requests_requester_id_fkey(id, gender)
       `,
       )
       .eq("id", requestId)
@@ -328,7 +347,7 @@ export const approveAddMemberRequest = async (req, res) => {
     let generationLevel = payload.generation_level || null;
     const parentId = fatherId || motherId;
     if (!generationLevel && parentId) {
-      const { data: parent, error: parentError } = await supabase
+      const { data: parent, error: parentError } = await supabaseAdmin
         .from("family_members")
         .select("generation_level")
         .eq("id", parentId)
@@ -339,9 +358,18 @@ export const approveAddMemberRequest = async (req, res) => {
       }
     }
 
+    const normalizedGender = normalizeGenderForFamilyMember(payload.gender);
+
+    if (payload.gender !== undefined && payload.gender !== null && !normalizedGender) {
+      return res.status(400).json({
+        error:
+          "Giới tính không hợp lệ. Chỉ chấp nhận: Male/Female/Other (hoặc Nam/Nữ/Khác).",
+      });
+    }
+
     const memberInsert = {
       full_name: payload.full_name,
-      gender: payload.gender || null,
+      gender: normalizedGender,
       birth_date: payload.birth_date || payload.date_of_birth || null,
       phone: payload.phone || null,
       email: payload.email || null,
@@ -355,7 +383,7 @@ export const approveAddMemberRequest = async (req, res) => {
       is_public: true,
     };
 
-    const { data: createdMember, error: createError } = await supabase
+    const { data: createdMember, error: createError } = await supabaseAdmin
       .from("family_members")
       .insert([memberInsert])
       .select("id, full_name, father_id, mother_id, generation_level")
@@ -363,7 +391,7 @@ export const approveAddMemberRequest = async (req, res) => {
 
     if (createError) throw createError;
 
-    const { error: updateError } = await supabase
+    const { error: updateError } = await supabaseAdmin
       .from("update_requests")
       .update({
         status: "approved",
@@ -375,7 +403,10 @@ export const approveAddMemberRequest = async (req, res) => {
       .eq("status", "pending");
 
     if (updateError) {
-      await supabase.from("family_members").delete().eq("id", createdMember.id);
+      await supabaseAdmin
+        .from("family_members")
+        .delete()
+        .eq("id", createdMember.id);
       throw updateError;
     }
 
@@ -385,6 +416,7 @@ export const approveAddMemberRequest = async (req, res) => {
       data: createdMember,
     });
   } catch (error) {
+    console.error("approveAddMemberRequest error:", error);
     return res.status(500).json({ error: error.message });
   }
 };
@@ -395,7 +427,11 @@ export const rejectAddMemberRequest = async (req, res) => {
     const { requestId } = req.params;
     const { adminNote } = req.body;
 
-    const { data: request, error: findError } = await supabase
+    if (!req.user?.id) {
+      return res.status(401).json({ error: "Phiên đăng nhập không hợp lệ" });
+    }
+
+    const { data: request, error: findError } = await supabaseAdmin
       .from("update_requests")
       .select("id")
       .eq("id", requestId)
@@ -407,7 +443,7 @@ export const rejectAddMemberRequest = async (req, res) => {
       return res.status(404).json({ error: "Không tìm thấy yêu cầu chờ duyệt" });
     }
 
-    const { error: updateError } = await supabase
+    const { error: updateError } = await supabaseAdmin
       .from("update_requests")
       .update({
         status: "rejected",
@@ -424,6 +460,7 @@ export const rejectAddMemberRequest = async (req, res) => {
       .status(200)
       .json({ success: true, message: "Đã từ chối yêu cầu thêm thành viên" });
   } catch (error) {
+    console.error("rejectAddMemberRequest error:", error);
     return res.status(500).json({ error: error.message });
   }
 };
