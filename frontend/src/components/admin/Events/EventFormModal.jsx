@@ -144,7 +144,10 @@ const EventFormModal = ({
       event_date: eventDateTime,
       end_date: endDateTime,
       location: formData.location.trim() || null,
-      related_member_id: formData.related_member_id || null,
+      related_member_id:
+        formData.related_member_id && formData.related_member_id !== "all_members"
+          ? formData.related_member_id
+          : null,
       is_recurring: formData.is_recurring,
       reminder_days: parseInt(formData.reminder_days) || 7,
     };
@@ -340,6 +343,7 @@ const EventFormModal = ({
                 className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-emerald-500"
               >
                 <option value="">-- Không chọn --</option>
+                <option value="all_members">Tất cả thành viên</option>
                 {members.map((member) => (
                   <option key={member.id} value={member.id}>
                     {member.full_name}{" "}

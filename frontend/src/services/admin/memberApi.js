@@ -58,6 +58,32 @@ export const getUnlinkedSpouses = async () => {
   return response.data;
 };
 
+// Lấy danh sách yêu cầu thêm thành viên (ADD_MEMBER)
+export const getAddMemberRequests = async (status = "pending") => {
+  const response = await api.get("/admin/member-requests", {
+    params: { status },
+  });
+  return response.data;
+};
+
+// Duyệt yêu cầu thêm thành viên
+export const approveAddMemberRequest = async (requestId, adminNote = "") => {
+  const response = await api.patch(
+    `/admin/member-requests/${requestId}/approve`,
+    { adminNote },
+  );
+  return response.data;
+};
+
+// Từ chối yêu cầu thêm thành viên
+export const rejectAddMemberRequest = async (requestId, adminNote = "") => {
+  const response = await api.patch(
+    `/admin/member-requests/${requestId}/reject`,
+    { adminNote },
+  );
+  return response.data;
+};
+
 // ===============================
 // QUẢN LÝ NGƯỜI DÙNG
 // ===============================

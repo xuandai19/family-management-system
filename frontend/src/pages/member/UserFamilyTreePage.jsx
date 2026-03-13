@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Home, GitBranch, Loader2, Landmark, UserPlus } from "lucide-react";
+import QuickPinchZoom, {
+  make3dTransformValue,
+} from "react-quick-pinch-zoom";
 import { getFamilyTree } from "../../services/member";
 import {
   FamilyNode,
@@ -22,7 +25,6 @@ const UserFamilyTreePage = () => {
   const [rootId, setRootId] = useState(DEFAULT_ROOT_ID);
   const [rootName, setRootName] = useState("");
   const [scale, setScale] = useState(1);
-  const [isHovering, setIsHovering] = useState(false);
   const [highlightedId, setHighlightedId] = useState(null);
 
   // State cho modal thông tin
@@ -31,6 +33,25 @@ const UserFamilyTreePage = () => {
   const [spouseOfName, setSpouseOfName] = useState(null);
 
   const treeContainerRef = useRef(null);
+  const treeContentRef = useRef(null);
+
+  const applyTransform = useCallback(({ x, y, scale: nextScale }) => {
+    if (!treeContentRef.current) return;
+
+    treeContentRef.current.style.transform = make3dTransformValue({
+      x,
+      y,
+      scale: nextScale,
+    });
+    setScale(nextScale);
+  }, []);
+
+  const onUpdate = useCallback(
+    ({ x, y, scale: nextScale }) => {
+      applyTransform({ x, y, scale: nextScale });
+    },
+    [applyTransform],
+  );
 
   // Các link liên quan
   const relatedLinks = [
@@ -67,46 +88,20 @@ const UserFamilyTreePage = () => {
     fetchFamilyTree(rootId);
   }, [rootId, fetchFamilyTree]);
 
-  // Handle wheel zoom
-  useEffect(() => {
-    const container = treeContainerRef.current;
-    if (!container) return;
-
-    const handleWheel = (e) => {
-      if (!isHovering) return;
-      e.preventDefault();
-      e.stopPropagation();
-
-      const delta = e.deltaY > 0 ? -0.1 : 0.1;
-      setScale((prev) =>
-        Math.min(MAX_SCALE, Math.max(MIN_SCALE, prev + delta)),
-      );
-    };
-
-    container.addEventListener("wheel", handleWheel, { passive: false });
-    return () => container.removeEventListener("wheel", handleWheel);
-  }, [isHovering]);
-
-  // Prevent page scroll when hovering tree
-  useEffect(() => {
-    if (!isHovering) return;
-
-    const preventScroll = (e) => {
-      if (treeContainerRef.current?.contains(e.target)) {
-        e.preventDefault();
-      }
-    };
-
-    document.addEventListener("wheel", preventScroll, { passive: false });
-    return () => document.removeEventListener("wheel", preventScroll);
-  }, [isHovering]);
-
   // Handlers
-  const handleZoomIn = () =>
-    setScale((prev) => Math.min(MAX_SCALE, prev + 0.2));
-  const handleZoomOut = () =>
-    setScale((prev) => Math.max(MIN_SCALE, prev - 0.2));
-  const handleResetZoom = () => setScale(1);
+  const handleZoomIn = () => {
+    const nextScale = Math.min(MAX_SCALE, scale + 0.2);
+    applyTransform({ x: 0, y: 0, scale: nextScale });
+  };
+
+  const handleZoomOut = () => {
+    const nextScale = Math.max(MIN_SCALE, scale - 0.2);
+    applyTransform({ x: 0, y: 0, scale: nextScale });
+  };
+
+  const handleResetZoom = () => {
+    applyTransform({ x: 0, y: 0, scale: 1 });
+  };
 
   const handleHighlight = (id, name) => {
     setHighlightedId(id);
@@ -115,13 +110,13 @@ const UserFamilyTreePage = () => {
 
   const handleViewTreeFrom = (memberId) => {
     setRootId(memberId);
-    setScale(1);
+    handleResetZoom();
     setHighlightedId(null);
   };
 
   const handleGoHome = () => {
     setRootId(DEFAULT_ROOT_ID);
-    setScale(1);
+    handleResetZoom();
     setHighlightedId(null);
   };
 
@@ -147,7 +142,10 @@ const UserFamilyTreePage = () => {
         breadcrumbs={[{ label: "Cây gia phả" }]}
         actions={
           <div className="w-full sm:w-80">
-            <SearchBox onHighlight={handleHighlight} />
+            <SearchBox
+              onHighlight={handleHighlight}
+              onViewTreeFrom={handleViewTreeFrom}
+            />
           </div>
         }
       />
@@ -174,8 +172,6 @@ const UserFamilyTreePage = () => {
         {/* Tree Container */}
         <div
           ref={treeContainerRef}
-          onMouseEnter={() => setIsHovering(true)}
-          onMouseLeave={() => setIsHovering(false)}
           className="relative h-[calc(100vh-280px)] min-h-[500px] overflow-auto bg-gradient-to-b from-amber-50/50 to-white"
         >
           {loading ? (
@@ -189,22 +185,23 @@ const UserFamilyTreePage = () => {
               </div>
             </div>
           ) : treeData ? (
-            <div
-              className="p-8 inline-block min-w-full"
-              style={{
-                transform: `scale(${scale})`,
-                transformOrigin: "top center",
-                transition: "transform 0.2s ease",
-              }}
+            <QuickPinchZoom
+              onUpdate={onUpdate}
+              wheelScaleFactor={220}
+              tapZoomFactor={1}
+              draggableUnzoomed={true}
+              className="h-full w-full"
             >
-              <div className="flex flex-col items-center">
-                <FamilyNode
-                  member={treeData}
-                  highlightedId={highlightedId}
-                  onPersonClick={handleNodeClick}
-                />
+              <div ref={treeContentRef} className="p-8 inline-block min-w-full">
+                <div className="flex flex-col items-center">
+                  <FamilyNode
+                    member={treeData}
+                    highlightedId={highlightedId}
+                    onPersonClick={handleNodeClick}
+                  />
+                </div>
               </div>
-            </div>
+            </QuickPinchZoom>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center">

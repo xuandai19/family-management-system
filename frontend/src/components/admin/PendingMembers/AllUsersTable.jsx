@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Loader2, Users, Eye, Calendar, Shield, User, UserX, CheckCircle, Clock, XCircle, Link2 } from "lucide-react";
 
 const getRoleInfo = (roleId) => {
@@ -18,7 +18,26 @@ const getStatusInfo = (status) => {
   }
 };
 
-const AllUsersTable = ({ users, loading, onView, formatDate, searchTerm, filterStatus }) => {
+const AllUsersTable = ({
+  users,
+  loading,
+  onView,
+  formatDate,
+  searchTerm,
+  filterStatus,
+  onUpdateRole,
+  roleUpdatingId,
+}) => {
+  const [draftRoles, setDraftRoles] = useState({});
+
+  useEffect(() => {
+    const nextDraft = {};
+    users.forEach((u) => {
+      nextDraft[u.id] = Number(u.role_id || 3);
+    });
+    setDraftRoles(nextDraft);
+  }, [users]);
+
   const filteredUsers = users.filter((user) => {
     const matchSearch = !searchTerm || 
       user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -52,6 +71,7 @@ const AllUsersTable = ({ users, loading, onView, formatDate, searchTerm, filterS
           <tr>
             <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Tài khoản</th>
             <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Vai trò</th>
+            <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Đổi vai trò</th>
             <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Trạng thái</th>
             <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Liên kết</th>
             <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Ngày tạo</th>
@@ -82,6 +102,34 @@ const AllUsersTable = ({ users, loading, onView, formatDate, searchTerm, filterS
                   <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${roleInfo.color}`}>
                     <RoleIcon size={12} /> {roleInfo.label}
                   </span>
+                </td>
+                <td className="px-6 py-3">
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={draftRoles[user.id] ?? Number(user.role_id || 3)}
+                      onChange={(e) =>
+                        setDraftRoles((prev) => ({
+                          ...prev,
+                          [user.id]: Number(e.target.value),
+                        }))
+                      }
+                      className="px-2 py-1 border rounded text-xs"
+                    >
+                      <option value={1}>Admin</option>
+                      <option value={2}>Thành viên</option>
+                      <option value={3}>Khách</option>
+                    </select>
+                    <button
+                      onClick={() => onUpdateRole?.(user.id, draftRoles[user.id])}
+                      disabled={
+                        roleUpdatingId === user.id ||
+                        Number(user.role_id || 3) === Number(draftRoles[user.id] || 3)
+                      }
+                      className="px-2 py-1 bg-blue-500 text-white rounded text-xs disabled:opacity-50"
+                    >
+                      {roleUpdatingId === user.id ? "Đang lưu" : "Lưu"}
+                    </button>
+                  </div>
                 </td>
                 <td className="px-6 py-3">
                   <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>

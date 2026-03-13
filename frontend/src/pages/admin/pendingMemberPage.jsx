@@ -13,6 +13,10 @@ import {
   getUnlinkedMembers,
   getUnlinkedSpouses,
   getAllUsers,
+  updateUserRole,
+  getAddMemberRequests,
+  approveAddMemberRequest,
+  rejectAddMemberRequest,
 } from "../../services/admin/memberApi";
 import {
   PendingStatsCards,
@@ -28,8 +32,10 @@ const PendingMemberPage = () => {
   const [allMembers, setAllMembers] = useState([]);
   const [allSpouses, setAllSpouses] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
+  const [addMemberRequests, setAddMemberRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [roleUpdatingId, setRoleUpdatingId] = useState(null);
 
   // Modal states
   const [showRejectModal, setShowRejectModal] = useState(false);
@@ -51,16 +57,19 @@ const PendingMemberPage = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [pendingRes, membersRes, spousesRes, usersRes] = await Promise.all([
-        getPendingMembers(),
-        getUnlinkedMembers(),
-        getUnlinkedSpouses(),
-        getAllUsers(),
-      ]);
+      const [pendingRes, membersRes, spousesRes, usersRes, addReqRes] =
+        await Promise.all([
+          getPendingMembers(),
+          getUnlinkedMembers(),
+          getUnlinkedSpouses(),
+          getAllUsers(),
+          getAddMemberRequests("pending"),
+        ]);
       if (pendingRes.success) setPendingAccounts(pendingRes.data || []);
       if (membersRes.success) setAllMembers(membersRes.data || []);
       if (spousesRes.success) setAllSpouses(spousesRes.data || []);
       if (usersRes.success) setAllUsers(usersRes.data || []);
+      if (addReqRes.success) setAddMemberRequests(addReqRes.data || []);
     } catch (error) {
       showToast("Lỗi tải dữ liệu: " + error.message, "error");
     }
@@ -95,6 +104,63 @@ const PendingMemberPage = () => {
     );
     setShowDetailModal(false);
     showToast("Đã từ chối yêu cầu!");
+  };
+
+  const handleApproveAddRequest = async (requestId) => {
+    const adminNote =
+      window.prompt("Ghi chú duyệt (không bắt buộc):", "") || "";
+    setActionLoading(true);
+    try {
+      const res = await approveAddMemberRequest(requestId, adminNote);
+      if (res.success) {
+        setAddMemberRequests((prev) => prev.filter((r) => r.id !== requestId));
+        showToast("Đã duyệt và thêm thành viên vào cây", "success");
+      }
+    } catch (error) {
+      showToast(error.response?.data?.error || "Duyệt yêu cầu thất bại", "error");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleRejectAddRequest = async (requestId) => {
+    const adminNote =
+      window.prompt("Lý do từ chối (không bắt buộc):", "") || "";
+    setActionLoading(true);
+    try {
+      const res = await rejectAddMemberRequest(requestId, adminNote);
+      if (res.success) {
+        setAddMemberRequests((prev) => prev.filter((r) => r.id !== requestId));
+        showToast("Đã từ chối yêu cầu thêm thành viên", "success");
+      }
+    } catch (error) {
+      showToast(
+        error.response?.data?.error || "Từ chối yêu cầu thất bại",
+        "error",
+      );
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleUpdateRole = async (userId, roleId) => {
+    setRoleUpdatingId(userId);
+    try {
+      const res = await updateUserRole(userId, roleId);
+      if (res.success) {
+        setAllUsers((prev) =>
+          prev.map((u) => (u.id === userId ? { ...u, role_id: roleId } : u)),
+        );
+        showToast("Cập nhật vai trò thành công", "success");
+      }
+    } catch (error) {
+      showToast(
+        error.response?.data?.error || "Cập nhật vai trò thất bại",
+        "error",
+      );
+    } finally {
+      setRoleUpdatingId(null);
+    }
   };
 
   // Stats - thêm admins và members
@@ -206,7 +272,64 @@ const PendingMemberPage = () => {
           formatDate={formatDate}
           searchTerm={searchTerm}
           filterStatus={filterStatus}
+          onUpdateRole={handleUpdateRole}
+          roleUpdatingId={roleUpdatingId}
         />
+      </div>
+
+      <div className="bg-white rounded-xl shadow-sm border overflow-hidden mt-6">
+        <div className="px-6 py-4 border-b bg-slate-50">
+          <h2 className="font-semibold text-slate-800 flex items-center gap-2">
+            <Users size={18} className="text-emerald-500" />
+            Yêu cầu thêm thành viên vào cây ({addMemberRequests.length})
+          </h2>
+        </div>
+
+        <div className="p-4 space-y-3">
+          {addMemberRequests.length === 0 ? (
+            <div className="text-sm text-slate-500 py-4 text-center">
+              Không có yêu cầu thêm thành viên đang chờ duyệt
+            </div>
+          ) : (
+            addMemberRequests.map((req) => (
+              <div
+                key={req.id}
+                className="border border-slate-200 rounded-lg p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3"
+              >
+                <div>
+                  <p className="font-medium text-slate-800">
+                    {req.new_data?.full_name || "(Chưa có tên)"}
+                  </p>
+                  <p className="text-sm text-slate-600 mt-1">
+                    Người gửi: {req.requester?.username || "-"}
+                    {req.target_member?.full_name
+                      ? ` • Thuộc nhánh: ${req.target_member.full_name}`
+                      : ""}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Ngày gửi: {formatDate(req.created_at)}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    disabled={actionLoading}
+                    onClick={() => handleApproveAddRequest(req.id)}
+                    className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm disabled:opacity-50"
+                  >
+                    Duyệt & thêm vào cây
+                  </button>
+                  <button
+                    disabled={actionLoading}
+                    onClick={() => handleRejectAddRequest(req.id)}
+                    className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm disabled:opacity-50"
+                  >
+                    Từ chối
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
       {/* Modals */}

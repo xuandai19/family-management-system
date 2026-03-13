@@ -115,6 +115,13 @@ const UserProfilePage = () => {
       if (uploadRes.success && newUrl) {
         await updateMyProfile({ avatar_url: newUrl });
         setUser((prev) => ({ ...prev, avatar_url: newUrl }));
+        setEditForm((prev) => ({ ...prev, avatar_url: newUrl }));
+
+        const localUser = JSON.parse(localStorage.getItem("user") || "{}");
+        if (localUser?.profile) {
+          localUser.profile.avatar_url = newUrl;
+          localStorage.setItem("user", JSON.stringify(localUser));
+        }
       }
     } catch (err) {
       console.error("Error uploading avatar:", err);
@@ -166,6 +173,20 @@ const UserProfilePage = () => {
 
       if (response.success) {
         alert(response.message || "Đã cập nhật thông tin thành công!");
+        const mergedUser = { ...user, ...changes };
+        setUser(mergedUser);
+        setEditForm(mergedUser);
+
+        const localUser = JSON.parse(localStorage.getItem("user") || "{}");
+        if (localUser?.profile) {
+          localUser.profile.full_name = mergedUser.full_name || localUser.profile.full_name;
+          localUser.profile.phone = mergedUser.phone || localUser.profile.phone;
+          localUser.profile.address = mergedUser.address || localUser.profile.address;
+          localUser.profile.gender = mergedUser.gender || localUser.profile.gender;
+          localUser.profile.avatar_url = mergedUser.avatar_url || localUser.profile.avatar_url;
+          localStorage.setItem("user", JSON.stringify(localUser));
+        }
+
         setShowEditModal(false);
         // Refresh profile data
         fetchUserProfile();

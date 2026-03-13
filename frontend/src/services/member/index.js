@@ -24,6 +24,8 @@ export {
   proposePost,
   getMyPosts,
   toggleLikePost,
+  getPostComments,
+  addPostComment,
 } from "./postApi";
 
 // Funds

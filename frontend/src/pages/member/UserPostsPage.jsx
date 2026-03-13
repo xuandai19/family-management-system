@@ -15,7 +15,12 @@ import {
   Tag,
 } from "lucide-react";
 import { PageHeader, QuickNavigation } from "../../components/member/common";
-import { getMemberPosts, toggleLikePost } from "../../services/member";
+import {
+  getMemberPosts,
+  toggleLikePost,
+  getPostComments,
+  addPostComment,
+} from "../../services/member";
 
 const UserPostsPage = () => {
   const navigate = useNavigate();
@@ -24,6 +29,10 @@ const UserPostsPage = () => {
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPost, setSelectedPost] = useState(null);
+  const [comments, setComments] = useState([]);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [commentInput, setCommentInput] = useState("");
+  const [commentSubmitting, setCommentSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -58,17 +67,88 @@ const UserPostsPage = () => {
             post.id === postId
               ? {
                   ...post,
-                  likes: response.data.like_count,
-                  isLiked: response.data.isLiked,
+                  like_count: response.data.like_count,
+                  is_liked: response.data.isLiked,
                 }
               : post,
           ),
+        );
+
+        setSelectedPost((prev) =>
+          prev && prev.id === postId
+            ? {
+                ...prev,
+                like_count: response.data.like_count,
+                is_liked: response.data.isLiked,
+              }
+            : prev,
         );
       }
     } catch (error) {
       console.error("Error liking post:", error);
     }
   };
+
+  const handleOpenPost = async (post) => {
+    setSelectedPost(post);
+    setComments([]);
+    setCommentInput("");
+    try {
+      setCommentsLoading(true);
+      const res = await getPostComments(post.id);
+      if (res.success) {
+        setComments(res.data || []);
+      }
+    } catch (err) {
+      console.error("Load comments failed:", err);
+    } finally {
+      setCommentsLoading(false);
+    }
+  };
+
+  const handleSubmitComment = async () => {
+    if (!selectedPost || !commentInput.trim()) return;
+    try {
+      setCommentSubmitting(true);
+      const res = await addPostComment(selectedPost.id, commentInput);
+      if (res.success) {
+        setComments((prev) => [...prev, res.data]);
+        setCommentInput("");
+
+        const nextCommentCount = res.meta?.comment_count ?? comments.length + 1;
+        setSelectedPost((prev) =>
+          prev
+            ? {
+                ...prev,
+                comment_count: nextCommentCount,
+              }
+            : prev,
+        );
+
+        setPosts((prev) =>
+          prev.map((post) =>
+            post.id === selectedPost.id
+              ? {
+                  ...post,
+                  comment_count: nextCommentCount,
+                }
+              : post,
+          ),
+        );
+      }
+    } catch (err) {
+      console.error("Add comment failed:", err);
+      alert(err.response?.data?.message || "Khong the them binh luan");
+    } finally {
+      setCommentSubmitting(false);
+    }
+  };
+
+  const getAuthorName = (post) =>
+    post?.author?.family_members?.full_name || post?.author?.username || "An danh";
+
+  const getAuthorAvatar = (post) =>
+    post?.author?.family_members?.avatar_url || post?.author?.avatar_url || "";
 
   const getCategoryLabel = (category) => {
     const categories = {
@@ -214,14 +294,20 @@ const UserPostsPage = () => {
               return (
                 <article
                   key={post.id}
-                  onClick={() => setSelectedPost(post)}
+                  onClick={() => handleOpenPost(post)}
                   className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer hover:shadow-lg transition-all group"
                 >
                   {/* Thumbnail */}
                   <div className="aspect-video bg-gradient-to-br from-amber-100 to-orange-100 relative">
-                    {post.thumbnail ? (
+                    {post.thumbnail_url || post.thumbnail ? (
                       <img
-                        src={post.thumbnail}
+                        src={post.thumbnail_url || post.thumbnail}
+                        alt={post.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : Array.isArray(post.images) && post.images.length > 0 ? (
+                      <img
+                        src={post.images[0]}
                         alt={post.title}
                         className="w-full h-full object-cover"
                       />
@@ -249,10 +335,10 @@ const UserPostsPage = () => {
                     {/* Author & Date */}
                     <div className="flex items-center gap-3 mb-4">
                       <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
-                        {post.author?.avatar ? (
+                        {getAuthorAvatar(post) ? (
                           <img
-                            src={post.author.avatar}
-                            alt={post.author.name}
+                            src={getAuthorAvatar(post)}
+                            alt={getAuthorName(post)}
                             className="w-full h-full rounded-full object-cover"
                           />
                         ) : (
@@ -261,7 +347,7 @@ const UserPostsPage = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-800 truncate">
-                          {post.author?.name || "Ẩn danh"}
+                          {getAuthorName(post)}
                         </p>
                         <p className="text-xs text-gray-500">
                           {formatDate(post.created_at)}
@@ -273,15 +359,15 @@ const UserPostsPage = () => {
                     <div className="flex items-center gap-4 text-sm text-gray-500 pt-4 border-t border-gray-100">
                       <span className="flex items-center gap-1">
                         <Eye size={16} />
-                        {post.views}
+                        {post.view_count || 0}
                       </span>
                       <span className="flex items-center gap-1">
                         <Heart size={16} />
-                        {post.likes}
+                        {post.like_count || 0}
                       </span>
                       <span className="flex items-center gap-1">
                         <MessageCircle size={16} />
-                        {post.comments}
+                        {post.comment_count || 0}
                       </span>
                     </div>
                   </div>
@@ -303,9 +389,9 @@ const UserPostsPage = () => {
             >
               {/* Header Image */}
               <div className="aspect-video bg-gradient-to-br from-amber-100 to-orange-100 relative">
-                {selectedPost.thumbnail ? (
+                {selectedPost.thumbnail_url || selectedPost.thumbnail ? (
                   <img
-                    src={selectedPost.thumbnail}
+                    src={selectedPost.thumbnail_url || selectedPost.thumbnail}
                     alt={selectedPost.title}
                     className="w-full h-full object-cover"
                   />
@@ -345,7 +431,7 @@ const UserPostsPage = () => {
                     </div>
                     <div>
                       <p className="font-medium text-gray-800">
-                        {selectedPost.author?.name || "Ẩn danh"}
+                        {getAuthorName(selectedPost)}
                       </p>
                       <p className="text-sm text-gray-500">
                         {formatDate(selectedPost.created_at)}
@@ -355,11 +441,11 @@ const UserPostsPage = () => {
                   <div className="flex items-center gap-4 ml-auto text-sm text-gray-500">
                     <span className="flex items-center gap-1">
                       <Eye size={16} />
-                      {selectedPost.views}
+                      {selectedPost.view_count || 0}
                     </span>
                     <span className="flex items-center gap-1">
                       <Heart size={16} />
-                      {selectedPost.likes}
+                      {selectedPost.like_count || 0}
                     </span>
                   </div>
                 </div>
@@ -371,22 +457,101 @@ const UserPostsPage = () => {
                   </p>
                 </div>
 
+                {Array.isArray(selectedPost.images) &&
+                  selectedPost.images.length > 0 && (
+                    <div className="mb-6 grid grid-cols-2 gap-3">
+                      {selectedPost.images.map((img, idx) => (
+                        <img
+                          key={`${selectedPost.id}-img-${idx}`}
+                          src={img}
+                          alt={`post-${idx + 1}`}
+                          className="w-full h-40 object-cover rounded-xl border border-gray-100"
+                        />
+                      ))}
+                    </div>
+                  )}
+
                 {/* Actions */}
                 <div className="flex gap-3 pt-4 border-t border-gray-100">
-                  <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors">
+                  <button
+                    onClick={() => handleLikePost(selectedPost.id)}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 border rounded-xl transition-colors ${
+                      selectedPost.is_liked
+                        ? "border-red-200 text-red-600 bg-red-50"
+                        : "border-gray-200 text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
                     <Heart size={18} />
-                    Thích
+                    {selectedPost.is_liked ? "Da thich" : "Thich"}
                   </button>
-                  <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors">
+                  <button
+                    onClick={() => {
+                      const input = document.getElementById("post-comment-input");
+                      if (input) input.focus();
+                    }}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
+                  >
                     <MessageCircle size={18} />
-                    Bình luận
+                    Binh luan
                   </button>
                   <button
                     onClick={() => setSelectedPost(null)}
                     className="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl hover:from-amber-600 hover:to-orange-600 transition-all"
                   >
-                    Đóng
+                    Dong
                   </button>
+                </div>
+
+                {/* Comments */}
+                <div className="mt-5 pt-5 border-t border-gray-100 space-y-4">
+                  <h4 className="font-semibold text-gray-800">
+                    Binh luan ({selectedPost.comment_count || 0})
+                  </h4>
+
+                  <div className="flex gap-2">
+                    <input
+                      id="post-comment-input"
+                      type="text"
+                      value={commentInput}
+                      onChange={(e) => setCommentInput(e.target.value)}
+                      placeholder="Nhap binh luan cua ban..."
+                      className="flex-1 px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none"
+                    />
+                    <button
+                      onClick={handleSubmitComment}
+                      disabled={commentSubmitting || !commentInput.trim()}
+                      className="px-4 py-2 bg-amber-500 text-white rounded-xl hover:bg-amber-600 disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {commentSubmitting ? "Dang gui" : "Gui"}
+                    </button>
+                  </div>
+
+                  {commentsLoading ? (
+                    <p className="text-sm text-gray-500">Dang tai binh luan...</p>
+                  ) : comments.length === 0 ? (
+                    <p className="text-sm text-gray-500">Chua co binh luan nao.</p>
+                  ) : (
+                    <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
+                      {comments.map((comment) => (
+                        <div
+                          key={comment.id}
+                          className="p-3 rounded-xl border border-gray-100 bg-gray-50"
+                        >
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <p className="text-sm font-semibold text-gray-800">
+                              {comment.user?.family_members?.full_name ||
+                                comment.user?.username ||
+                                "An danh"}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {formatDate(comment.created_at)}
+                            </p>
+                          </div>
+                          <p className="text-sm text-gray-700">{comment.content}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

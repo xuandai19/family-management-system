@@ -65,3 +65,28 @@ export const toggleLikePost = async (postId) => {
     throw error;
   }
 };
+
+// Lấy danh sách bình luận của bài viết
+export const getPostComments = async (postId) => {
+  try {
+    const response = await api.get(`/member/posts/${postId}/comments`);
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi lấy bình luận:", error);
+    throw error;
+  }
+};
+
+// Thêm bình luận mới
+export const addPostComment = async (postId, content, parentId = null) => {
+  try {
+    const response = await api.post(`/member/posts/${postId}/comments`, {
+      content,
+      parent_id: parentId,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi thêm bình luận:", error);
+    throw error;
+  }
+};

@@ -148,6 +148,22 @@ const UserAddChildRequestPage = () => {
     return new Date(dateStr).toLocaleDateString("vi-VN");
   };
 
+  const handleCancelRequest = async (requestId) => {
+    const confirmed = window.confirm("Bạn có chắc muốn hủy yêu cầu này?");
+    if (!confirmed) return;
+
+    try {
+      const response = await cancelChildRequest(requestId);
+      if (response.success) {
+        setPendingRequests((prev) => prev.filter((r) => r.id !== requestId));
+      } else {
+        alert(response.message || "Không thể hủy yêu cầu");
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Có lỗi xảy ra khi hủy yêu cầu");
+    }
+  };
+
   const getStatusBadge = (status) => {
     switch (status) {
       case "pending":
@@ -462,6 +478,17 @@ const UserAddChildRequestPage = () => {
                         {request.date_of_birth &&
                           ` • Ngày sinh: ${formatDate(request.date_of_birth)}`}
                       </p>
+                    )}
+                    {request.status === "pending" && (
+                      <div className="mt-3">
+                        <button
+                          onClick={() => handleCancelRequest(request.id)}
+                          className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-sm"
+                        >
+                          <Trash2 size={14} />
+                          Hủy yêu cầu
+                        </button>
+                      </div>
                     )}
                   </div>
                 ))}

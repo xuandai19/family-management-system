@@ -13,7 +13,11 @@ import {
   Info,
 } from "lucide-react";
 import { PageHeader, QuickNavigation } from "../../components/member/common";
-import { getMemberEvents } from "../../services/member";
+import {
+  getMemberEvents,
+  registerForEvent,
+  cancelEventRegistration,
+} from "../../services/member";
 
 const UserEventsPage = () => {
   const navigate = useNavigate();
@@ -22,6 +26,7 @@ const UserEventsPage = () => {
   const [filter, setFilter] = useState("all"); // all, upcoming, past
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [registeringEventId, setRegisteringEventId] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -104,6 +109,45 @@ const UserEventsPage = () => {
     { label: "Từ đường", path: "/member/ancestral-house" },
     { label: "Bài viết", path: "/member/posts" },
   ];
+
+  const applyEventRegistrationState = (eventId, payload) => {
+    const patch = {
+      is_registered: payload?.is_registered,
+      current_participants: payload?.current_participants,
+    };
+
+    setEvents((prev) =>
+      prev.map((event) =>
+        event.id === eventId ? { ...event, ...patch } : event,
+      ),
+    );
+
+    setSelectedEvent((prev) =>
+      prev && prev.id === eventId ? { ...prev, ...patch } : prev,
+    );
+  };
+
+  const handleRegisterAction = async (event) => {
+    try {
+      setRegisteringEventId(event.id);
+      if (event.is_registered) {
+        const res = await cancelEventRegistration(event.id);
+        if (res.success) {
+          applyEventRegistrationState(event.id, res.data);
+        }
+      } else {
+        const res = await registerForEvent(event.id);
+        if (res.success) {
+          applyEventRegistrationState(event.id, res.data);
+        }
+      }
+    } catch (err) {
+      console.error("Registration action failed:", err);
+      alert(err.response?.data?.message || "Không thể cập nhật đăng ký sự kiện");
+    } finally {
+      setRegisteringEventId(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -276,6 +320,11 @@ const UserEventsPage = () => {
                           </span>
                         </div>
                       )}
+                      {event.is_registered && (
+                        <div className="text-sm text-green-600 font-medium">
+                          Ban da dang ky tham gia
+                        </div>
+                      )}
                     </div>
 
                     {/* Progress bar for participants */}
@@ -393,8 +442,16 @@ const UserEventsPage = () => {
                     Đóng
                   </button>
                   {isUpcoming(selectedEvent.event_date) && (
-                    <button className="flex-1 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl hover:from-amber-600 hover:to-orange-600 transition-all font-medium">
-                      Đăng ký tham gia
+                    <button
+                      onClick={() => handleRegisterAction(selectedEvent)}
+                      disabled={registeringEventId === selectedEvent.id}
+                      className="flex-1 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl hover:from-amber-600 hover:to-orange-600 transition-all font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {registeringEventId === selectedEvent.id
+                        ? "Dang xu ly..."
+                        : selectedEvent.is_registered
+                          ? "Huy dang ky"
+                          : "Dang ky tham gia"}
                     </button>
                   )}
                 </div>
