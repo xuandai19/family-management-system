@@ -231,7 +231,7 @@ const PostsPage = () => {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-50 rounded-lg">
@@ -268,19 +268,6 @@ const PostsPage = () => {
                   {posts.filter((p) => p.status === "published").length}
                 </p>
                 <p className="text-sm text-gray-500">Đã đăng</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-50 rounded-lg">
-                <Eye size={20} className="text-purple-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {posts.reduce((sum, p) => sum + (p.view_count || 0), 0)}
-                </p>
-                <p className="text-sm text-gray-500">Lượt xem</p>
               </div>
             </div>
           </div>
@@ -394,10 +381,6 @@ const PostsPage = () => {
                             <span className="flex items-center gap-1">
                               <Calendar size={12} />
                               {formatDate(post.created_at)}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Eye size={12} />
-                              {post.view_count || 0}
                             </span>
                           </div>
                         </div>

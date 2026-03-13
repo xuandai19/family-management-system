@@ -67,7 +67,10 @@ const UserPaymentHistoryPage = () => {
   };
 
   const formatDate = (dateStr) => {
-    return new Date(dateStr).toLocaleDateString("vi-VN");
+    if (!dateStr) return "-";
+    const d = new Date(dateStr);
+    if (Number.isNaN(d.getTime())) return "-";
+    return d.toLocaleDateString("vi-VN");
   };
 
   // Tính tổng đã đóng
@@ -75,11 +78,13 @@ const UserPaymentHistoryPage = () => {
 
   // Filter payments
   const filteredPayments = payments.filter((payment) => {
-    const matchSearch = payment.description
+    const description = String(payment.description || "");
+    const paymentDate = String(payment.transaction_date || "");
+
+    const matchSearch = description
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
-    const matchYear =
-      filterYear === "all" || payment.paymentDate.startsWith(filterYear);
+    const matchYear = filterYear === "all" || paymentDate.startsWith(filterYear);
     return matchSearch && matchYear;
   });
 
@@ -180,7 +185,7 @@ const UserPaymentHistoryPage = () => {
                 filteredPayments.map((payment) => (
                   <tr key={payment.id} className="hover:bg-slate-50">
                     <td className="px-6 py-4 text-sm text-slate-600 font-mono">
-                      {payment.receiptNo}
+                      {`PT-${payment.id}`}
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-800 font-medium">
                       {payment.description}
@@ -191,11 +196,11 @@ const UserPaymentHistoryPage = () => {
                     <td className="px-6 py-4 text-sm text-slate-600">
                       <div className="flex items-center gap-2">
                         <Calendar size={14} />
-                        {formatDate(payment.paymentDate)}
+                        {formatDate(payment.transaction_date)}
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-600">
-                      {payment.method}
+                      Chuyển khoản
                     </td>
                     <td className="px-6 py-4">
                       <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">

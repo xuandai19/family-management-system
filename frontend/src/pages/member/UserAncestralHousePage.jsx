@@ -78,6 +78,15 @@ const UserAncestralHousePage = () => {
     return new Date(dateStr).toLocaleDateString("vi-VN");
   };
 
+  const houseMainPhoto =
+    house?.main_photo ||
+    (Array.isArray(house?.images) && house.images.length > 0
+      ? house.images[0]
+      : null);
+  const houseGallery =
+    house?.photo_gallery ||
+    (Array.isArray(house?.images) ? house.images : []);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -100,10 +109,10 @@ const UserAncestralHousePage = () => {
         <>
           {/* Hero Section */}
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
-            {house.main_photo ? (
+            {houseMainPhoto ? (
               <div className="relative h-64 sm:h-80 lg:h-96">
                 <img
-                  src={house.main_photo}
+                  src={houseMainPhoto}
                   alt={house.name}
                   className="w-full h-full object-cover"
                 />
@@ -235,9 +244,9 @@ const UserAncestralHousePage = () => {
               <h3 className="text-lg font-semibold text-slate-800 mb-4">
                 Hình ảnh từ đường
               </h3>
-              {house.photo_gallery && house.photo_gallery.length > 0 ? (
+              {houseGallery.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {house.photo_gallery.map((photo, index) => (
+                  {houseGallery.map((photo, index) => (
                     <div
                       key={index}
                       className="aspect-square rounded-lg overflow-hidden"

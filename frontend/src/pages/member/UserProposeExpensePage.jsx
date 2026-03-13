@@ -108,7 +108,10 @@ const UserProposeExpensePage = () => {
       }
     } catch (error) {
       console.error("Error submitting:", error);
-      setApiError("Không thể kết nối đến server. Vui lòng thử lại sau.");
+      setApiError(
+        error.response?.data?.message ||
+          "Không thể kết nối đến server. Vui lòng thử lại sau.",
+      );
     } finally {
       setLoading(false);
     }
@@ -258,16 +261,16 @@ const UserProposeExpensePage = () => {
                   <label
                     key={p.value}
                     className={`flex items-center gap-2 px-4 py-2 rounded-xl cursor-pointer transition-all border ${
-                      formData.priority === p.value
+                      formData.urgency === p.value
                         ? `${p.color} border-current`
                         : "border-gray-200 hover:border-gray-300"
                     }`}
                   >
                     <input
                       type="radio"
-                      name="priority"
+                      name="urgency"
                       value={p.value}
-                      checked={formData.priority === p.value}
+                      checked={formData.urgency === p.value}
                       onChange={handleChange}
                       className="sr-only"
                     />
