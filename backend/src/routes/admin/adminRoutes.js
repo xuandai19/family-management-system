@@ -5,6 +5,9 @@ import {
   rejectMemberRegistration,
   getPendingMemberRequests,
   approveSpouseRegistration,
+  getAddMemberRequests,
+  approveAddMemberRequest,
+  rejectAddMemberRequest,
   // User/Profile
   getAllUsers,
   deleteUser,
@@ -92,6 +95,25 @@ router.patch(
   verifyToken,
   isAdmin,
   approveSpouseRegistration,
+);
+
+// Danh sách yêu cầu thêm thành viên (ADD_MEMBER)
+router.get("/member-requests", verifyToken, isAdmin, getAddMemberRequests);
+
+// Duyệt yêu cầu thêm thành viên
+router.patch(
+  "/member-requests/:requestId/approve",
+  verifyToken,
+  isAdmin,
+  approveAddMemberRequest,
+);
+
+// Từ chối yêu cầu thêm thành viên
+router.patch(
+  "/member-requests/:requestId/reject",
+  verifyToken,
+  isAdmin,
+  rejectAddMemberRequest,
 );
 
 /**

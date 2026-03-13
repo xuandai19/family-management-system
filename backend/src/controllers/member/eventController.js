@@ -3,14 +3,15 @@
 // Xem và đề xuất sự kiện cho member
 // ===============================
 
-import { supabase } from "../../config/supabase.js";
+import { supabaseAdmin } from "../../config/supabase.js";
 
 // Lấy danh sách sự kiện (public cho member)
 export const getEvents = async (req, res) => {
   try {
+    const userId = req.user.id;
     const { event_type, status, year, month } = req.query;
 
-    let query = supabase
+    let query = supabaseAdmin
       .from("events")
       .select("*")
       .order("event_date", { ascending: true });
@@ -44,7 +45,40 @@ export const getEvents = async (req, res) => {
     const { data, error } = await query;
 
     if (error) throw error;
-    res.json({ success: true, data });
+
+    const events = data || [];
+    if (events.length === 0) {
+      return res.json({ success: true, data: [] });
+    }
+
+    const eventIds = events.map((e) => e.id);
+
+    const [{ data: registrations }, { data: myRegistrations }] = await Promise.all([
+      supabaseAdmin
+        .from("event_registrations")
+        .select("event_id")
+        .in("event_id", eventIds),
+      supabaseAdmin
+        .from("event_registrations")
+        .select("event_id")
+        .in("event_id", eventIds)
+        .eq("user_id", userId),
+    ]);
+
+    const participantCountByEvent = (registrations || []).reduce((acc, row) => {
+      acc[row.event_id] = (acc[row.event_id] || 0) + 1;
+      return acc;
+    }, {});
+
+    const myRegisteredSet = new Set((myRegistrations || []).map((r) => r.event_id));
+
+    const enrichedEvents = events.map((event) => ({
+      ...event,
+      current_participants: participantCountByEvent[event.id] || 0,
+      is_registered: myRegisteredSet.has(event.id),
+    }));
+
+    res.json({ success: true, data: enrichedEvents });
   } catch (error) {
     console.error("Error getting events:", error);
     res.status(500).json({ success: false, message: error.message });
@@ -57,7 +91,7 @@ export const getUpcomingEvents = async (req, res) => {
     const { limit = 5 } = req.query;
     const today = new Date().toISOString().split("T")[0];
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("events")
       .select("*")
       .gte("event_date", today)
@@ -75,16 +109,38 @@ export const getUpcomingEvents = async (req, res) => {
 // Lấy chi tiết sự kiện
 export const getEventById = async (req, res) => {
   try {
+    const userId = req.user.id;
     const { id } = req.params;
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("events")
       .select("*")
       .eq("id", id)
       .single();
 
     if (error) throw error;
-    res.json({ success: true, data });
+
+    const [{ count }, { data: myReg }] = await Promise.all([
+      supabaseAdmin
+        .from("event_registrations")
+        .select("*", { count: "exact", head: true })
+        .eq("event_id", id),
+      supabaseAdmin
+        .from("event_registrations")
+        .select("id")
+        .eq("event_id", id)
+        .eq("user_id", userId)
+        .maybeSingle(),
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        ...data,
+        current_participants: count || 0,
+        is_registered: !!myReg,
+      },
+    });
   } catch (error) {
     console.error("Error getting event:", error);
     res.status(500).json({ success: false, message: error.message });
@@ -115,7 +171,7 @@ export const proposeEvent = async (req, res) => {
     }
 
     // Insert vào bảng event_proposals (chờ admin duyệt)
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("event_proposals")
       .insert([
         {
@@ -152,7 +208,7 @@ export const getMyEventProposals = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("event_proposals")
       .select("*")
       .eq("proposed_by", userId)
@@ -173,7 +229,7 @@ export const registerForEvent = async (req, res) => {
     const { eventId } = req.params;
 
     // Kiểm tra sự kiện có tồn tại không
-    const { data: event, error: eventError } = await supabase
+    const { data: event, error: eventError } = await supabaseAdmin
       .from("events")
       .select("*")
       .eq("id", eventId)
@@ -187,12 +243,12 @@ export const registerForEvent = async (req, res) => {
     }
 
     // Kiểm tra đã đăng ký chưa
-    const { data: existing } = await supabase
+    const { data: existing } = await supabaseAdmin
       .from("event_registrations")
       .select("id")
       .eq("event_id", eventId)
       .eq("user_id", userId)
-      .single();
+      .maybeSingle();
 
     if (existing) {
       return res.status(400).json({
@@ -203,7 +259,7 @@ export const registerForEvent = async (req, res) => {
 
     // Kiểm tra số lượng tham gia
     if (event.max_participants) {
-      const { count } = await supabase
+      const { count } = await supabaseAdmin
         .from("event_registrations")
         .select("*", { count: "exact", head: true })
         .eq("event_id", eventId);
@@ -217,7 +273,7 @@ export const registerForEvent = async (req, res) => {
     }
 
     // Đăng ký
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("event_registrations")
       .insert([
         {
@@ -231,10 +287,19 @@ export const registerForEvent = async (req, res) => {
 
     if (error) throw error;
 
+    const { count } = await supabaseAdmin
+      .from("event_registrations")
+      .select("*", { count: "exact", head: true })
+      .eq("event_id", eventId);
+
     res.status(201).json({
       success: true,
       message: "Đăng ký tham gia sự kiện thành công",
-      data,
+      data: {
+        ...data,
+        is_registered: true,
+        current_participants: count || 0,
+      },
     });
   } catch (error) {
     console.error("Error registering for event:", error);
@@ -248,7 +313,7 @@ export const cancelEventRegistration = async (req, res) => {
     const userId = req.user.id;
     const { eventId } = req.params;
 
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from("event_registrations")
       .delete()
       .eq("event_id", eventId)
@@ -256,9 +321,18 @@ export const cancelEventRegistration = async (req, res) => {
 
     if (error) throw error;
 
+    const { count } = await supabaseAdmin
+      .from("event_registrations")
+      .select("*", { count: "exact", head: true })
+      .eq("event_id", eventId);
+
     res.json({
       success: true,
       message: "Đã hủy đăng ký tham gia sự kiện",
+      data: {
+        is_registered: false,
+        current_participants: count || 0,
+      },
     });
   } catch (error) {
     console.error("Error canceling registration:", error);

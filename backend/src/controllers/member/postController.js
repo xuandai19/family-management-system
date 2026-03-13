@@ -3,14 +3,56 @@
 // Xem và đề xuất bài viết cho member
 // ===============================
 
-import { supabase } from "../../config/supabase.js";
+import { supabaseAdmin } from "../../config/supabase.js";
+
+const enrichPosts = async (posts, userId) => {
+  if (!posts || posts.length === 0) return [];
+
+  const postIds = posts.map((p) => p.id);
+
+  const [{ data: likes }, { data: myLikes }, { data: comments }] =
+    await Promise.all([
+      supabaseAdmin.from("post_likes").select("post_id").in("post_id", postIds),
+      supabaseAdmin
+        .from("post_likes")
+        .select("post_id")
+        .in("post_id", postIds)
+        .eq("user_id", userId),
+      supabaseAdmin
+        .from("post_comments")
+        .select("post_id")
+        .in("post_id", postIds),
+    ]);
+
+  const likeCountByPost = (likes || []).reduce((acc, row) => {
+    acc[row.post_id] = (acc[row.post_id] || 0) + 1;
+    return acc;
+  }, {});
+
+  const commentCountByPost = (comments || []).reduce((acc, row) => {
+    acc[row.post_id] = (acc[row.post_id] || 0) + 1;
+    return acc;
+  }, {});
+
+  const myLikedSet = new Set((myLikes || []).map((l) => l.post_id));
+
+  return posts.map((post) => ({
+    ...post,
+    thumbnail: post.thumbnail_url || null,
+    view_count: post.view_count || 0,
+    like_count: likeCountByPost[post.id] || 0,
+    comment_count: commentCountByPost[post.id] || 0,
+    is_liked: myLikedSet.has(post.id),
+  }));
+};
 
 // Lấy danh sách bài viết đã xuất bản (public)
 export const getPublishedPosts = async (req, res) => {
   try {
+    const userId = req.user.id;
     const { category, search, limit = 20, offset = 0 } = req.query;
 
-    let query = supabase
+    let query = supabaseAdmin
       .from("posts")
       .select(
         `
@@ -37,7 +79,9 @@ export const getPublishedPosts = async (req, res) => {
     const { data, error } = await query;
 
     if (error) throw error;
-    res.json({ success: true, data });
+
+    const enriched = await enrichPosts(data || [], userId);
+    res.json({ success: true, data: enriched });
   } catch (error) {
     console.error("Error getting published posts:", error);
     res.status(500).json({ success: false, message: error.message });
@@ -47,9 +91,10 @@ export const getPublishedPosts = async (req, res) => {
 // Lấy chi tiết bài viết
 export const getPostById = async (req, res) => {
   try {
+    const userId = req.user.id;
     const { id } = req.params;
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("posts")
       .select(
         `
@@ -75,12 +120,17 @@ export const getPostById = async (req, res) => {
     }
 
     // Tăng lượt xem
-    await supabase
+    await supabaseAdmin
       .from("posts")
-      .update({ views: (data.views || 0) + 1 })
+      .update({ view_count: (data.view_count || 0) + 1 })
       .eq("id", id);
 
-    res.json({ success: true, data });
+    const [enriched] = await enrichPosts(
+      [{ ...data, view_count: (data.view_count || 0) + 1 }],
+      userId
+    );
+
+    res.json({ success: true, data: enriched });
   } catch (error) {
     console.error("Error getting post:", error);
     res.status(500).json({ success: false, message: error.message });
@@ -91,7 +141,7 @@ export const getPostById = async (req, res) => {
 export const proposePost = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { title, category, excerpt, content, thumbnail } = req.body;
+    const { title, category, excerpt, content, thumbnail, thumbnail_url, images } = req.body;
 
     // Validate required fields
     if (!title || !excerpt || !content) {
@@ -101,7 +151,7 @@ export const proposePost = async (req, res) => {
       });
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("posts")
       .insert([
         {
@@ -109,11 +159,10 @@ export const proposePost = async (req, res) => {
           category: category || "other",
           excerpt,
           content,
-          thumbnail: thumbnail || null,
+          thumbnail_url: thumbnail_url || thumbnail || null,
+          images: Array.isArray(images) ? images : [],
           author_id: userId,
           status: "pending", // pending, published, rejected
-          views: 0,
-          likes: 0,
         },
       ])
       .select()
@@ -138,7 +187,7 @@ export const getMyPosts = async (req, res) => {
     const userId = req.user.id;
     const { status } = req.query;
 
-    let query = supabase
+    let query = supabaseAdmin
       .from("posts")
       .select("*")
       .eq("author_id", userId)
@@ -151,7 +200,8 @@ export const getMyPosts = async (req, res) => {
     const { data, error } = await query;
 
     if (error) throw error;
-    res.json({ success: true, data });
+    const enriched = await enrichPosts(data || [], userId);
+    res.json({ success: true, data: enriched });
   } catch (error) {
     console.error("Error getting my posts:", error);
     res.status(500).json({ success: false, message: error.message });
@@ -163,10 +213,10 @@ export const updateMyPost = async (req, res) => {
   try {
     const userId = req.user.id;
     const { id } = req.params;
-    const { title, category, excerpt, content, thumbnail } = req.body;
+    const { title, category, excerpt, content, thumbnail, thumbnail_url, images } = req.body;
 
     // Kiểm tra bài viết
-    const { data: existing, error: checkError } = await supabase
+    const { data: existing, error: checkError } = await supabaseAdmin
       .from("posts")
       .select("*")
       .eq("id", id)
@@ -187,14 +237,15 @@ export const updateMyPost = async (req, res) => {
       });
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("posts")
       .update({
         title,
         category,
         excerpt,
         content,
-        thumbnail,
+        thumbnail_url: thumbnail_url || thumbnail || null,
+        images: Array.isArray(images) ? images : existing.images || [],
         updated_at: new Date().toISOString(),
       })
       .eq("id", id)
@@ -221,7 +272,7 @@ export const deleteMyPost = async (req, res) => {
     const { id } = req.params;
 
     // Kiểm tra bài viết
-    const { data: existing, error: checkError } = await supabase
+    const { data: existing, error: checkError } = await supabaseAdmin
       .from("posts")
       .select("*")
       .eq("id", id)
@@ -242,7 +293,7 @@ export const deleteMyPost = async (req, res) => {
       });
     }
 
-    const { error } = await supabase.from("posts").delete().eq("id", id);
+    const { error } = await supabaseAdmin.from("posts").delete().eq("id", id);
 
     if (error) throw error;
 
@@ -262,35 +313,183 @@ export const toggleLikePost = async (req, res) => {
     const userId = req.user.id;
     const { id } = req.params;
 
+    // Kiểm tra bài viết tồn tại
+    const { data: post, error: postError } = await supabaseAdmin
+      .from("posts")
+      .select("id, status")
+      .eq("id", id)
+      .single();
+
+    if (postError || !post || post.status !== "published") {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy bài viết có thể tương tác",
+      });
+    }
+
     // Kiểm tra đã like chưa
-    const { data: existingLike } = await supabase
+    const { data: existingLike } = await supabaseAdmin
       .from("post_likes")
       .select("id")
       .eq("post_id", id)
       .eq("user_id", userId)
-      .single();
+      .maybeSingle();
+
+    let isLiked = false;
 
     if (existingLike) {
       // Unlike
-      await supabase.from("post_likes").delete().eq("id", existingLike.id);
-
-      // Giảm số like
-      await supabase.rpc("decrement_post_likes", { post_id: id });
-
-      res.json({ success: true, liked: false, message: "Đã bỏ thích" });
+      await supabaseAdmin.from("post_likes").delete().eq("id", existingLike.id);
     } else {
       // Like
-      await supabase
+      await supabaseAdmin
         .from("post_likes")
         .insert([{ post_id: id, user_id: userId }]);
-
-      // Tăng số like
-      await supabase.rpc("increment_post_likes", { post_id: id });
-
-      res.json({ success: true, liked: true, message: "Đã thích bài viết" });
+      isLiked = true;
     }
+
+    const { count } = await supabaseAdmin
+      .from("post_likes")
+      .select("*", { count: "exact", head: true })
+      .eq("post_id", id);
+
+    res.json({
+      success: true,
+      message: isLiked ? "Đã thích bài viết" : "Đã bỏ thích",
+      data: {
+        post_id: Number(id),
+        like_count: count || 0,
+        isLiked,
+      },
+    });
   } catch (error) {
     console.error("Error toggling like:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Lấy bình luận của bài viết
+export const getPostComments = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { data: post, error: postError } = await supabaseAdmin
+      .from("posts")
+      .select("id, status")
+      .eq("id", id)
+      .single();
+
+    if (postError || !post || post.status !== "published") {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy bài viết",
+      });
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from("post_comments")
+      .select(
+        `
+        id,
+        post_id,
+        user_id,
+        content,
+        parent_id,
+        created_at,
+        updated_at,
+        user:profiles!post_comments_user_id_fkey(
+          id,
+          username,
+          avatar_url,
+          family_members(full_name, avatar_url)
+        )
+      `
+      )
+      .eq("post_id", id)
+      .order("created_at", { ascending: true });
+
+    if (error) throw error;
+
+    res.json({ success: true, data: data || [] });
+  } catch (error) {
+    console.error("Error getting post comments:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Thêm bình luận cho bài viết
+export const addPostComment = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+    const { content, parent_id = null } = req.body;
+
+    if (!content || !content.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Nội dung bình luận không được để trống",
+      });
+    }
+
+    const { data: post, error: postError } = await supabaseAdmin
+      .from("posts")
+      .select("id, status")
+      .eq("id", id)
+      .single();
+
+    if (postError || !post || post.status !== "published") {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy bài viết có thể bình luận",
+      });
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from("post_comments")
+      .insert([
+        {
+          post_id: Number(id),
+          user_id: userId,
+          content: content.trim(),
+          parent_id,
+        },
+      ])
+      .select(
+        `
+        id,
+        post_id,
+        user_id,
+        content,
+        parent_id,
+        created_at,
+        updated_at,
+        user:profiles!post_comments_user_id_fkey(
+          id,
+          username,
+          avatar_url,
+          family_members(full_name, avatar_url)
+        )
+      `
+      )
+      .single();
+
+    if (error) throw error;
+
+    const { count } = await supabaseAdmin
+      .from("post_comments")
+      .select("*", { count: "exact", head: true })
+      .eq("post_id", id);
+
+    res.status(201).json({
+      success: true,
+      message: "Đã thêm bình luận",
+      data,
+      meta: {
+        comment_count: count || 0,
+      },
+    });
+  } catch (error) {
+    console.error("Error adding post comment:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

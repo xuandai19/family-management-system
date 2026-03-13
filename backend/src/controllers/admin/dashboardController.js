@@ -17,10 +17,10 @@ export const getDashboardStats = async (req, res) => {
     // 3. Số đời trong gia phả (max generation)
     const { data: generations } = await supabaseAdmin
       .from("family_members")
-      .select("generation")
-      .order("generation", { ascending: false })
+      .select("generation_level")
+      .order("generation_level", { ascending: false })
       .limit(1);
-    const maxGeneration = generations?.[0]?.generation || 0;
+    const maxGeneration = generations?.[0]?.generation_level || 0;
 
     // 4. Số sự kiện sắp tới (trong 30 ngày)
     const today = new Date().toISOString().split("T")[0];
@@ -34,11 +34,8 @@ export const getDashboardStats = async (req, res) => {
       .lte("event_date", next30Days);
 
     // 5. Thống kê quỹ
-    const { data: funds } = await supabaseAdmin
-      .from("funds")
-      .select("current_balance");
-    const totalFund =
-      funds?.reduce((sum, f) => sum + (f.current_balance || 0), 0) || 0;
+    const { data: funds } = await supabaseAdmin.from("funds").select("balance");
+    const totalFund = funds?.reduce((sum, f) => sum + (Number(f.balance) || 0), 0) || 0;
 
     // 6. Tổng thu/chi tháng này
     const startOfMonth = new Date(

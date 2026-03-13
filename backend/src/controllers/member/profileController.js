@@ -47,16 +47,34 @@ export const getMyProfile = async (req, res) => {
 export const updateMyProfile = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { full_name, email, phone, address, bio, avatar_url } = req.body;
+    const {
+      full_name,
+      username,
+      email,
+      phone,
+      address,
+      bio,
+      avatar_url,
+      gender,
+      occupation,
+      date_of_birth,
+      birth_date,
+    } = req.body;
+
+    const normalizedBirthDate = birth_date ?? date_of_birth;
 
     // Chỉ cập nhật những field được gửi lên (không undefined)
     const profileUpdate = { updated_at: new Date().toISOString() };
-    if (full_name !== undefined) profileUpdate.full_name = full_name;
+    if (full_name !== undefined) profileUpdate.username = full_name;
+    if (username !== undefined) profileUpdate.username = username;
     if (email !== undefined) profileUpdate.email = email;
     if (phone !== undefined) profileUpdate.phone = phone;
     if (address !== undefined) profileUpdate.address = address;
     if (bio !== undefined) profileUpdate.bio = bio;
     if (avatar_url !== undefined) profileUpdate.avatar_url = avatar_url;
+    if (gender !== undefined) profileUpdate.gender = gender;
+    if (normalizedBirthDate !== undefined)
+      profileUpdate.birth_date = normalizedBirthDate;
 
     // Update profiles table
     const { data: profile, error: profileError } = await supabase
@@ -74,7 +92,12 @@ export const updateMyProfile = async (req, res) => {
       if (full_name !== undefined) memberUpdate.full_name = full_name;
       if (phone !== undefined) memberUpdate.phone = phone;
       if (address !== undefined) memberUpdate.address = address;
+      if (bio !== undefined) memberUpdate.bio = bio;
       if (avatar_url !== undefined) memberUpdate.avatar_url = avatar_url;
+      if (gender !== undefined) memberUpdate.gender = gender;
+      if (occupation !== undefined) memberUpdate.occupation = occupation;
+      if (normalizedBirthDate !== undefined)
+        memberUpdate.birth_date = normalizedBirthDate;
 
       await supabase
         .from("family_members")

@@ -120,8 +120,16 @@ export const createPost = async (req, res) => {
       .replace(/(^-|-$)/g, "")
       .concat("-", Date.now());
 
-    // Check if user is admin
-    const isAdmin = req.user?.role_id === 1;
+    // Check role from profiles table because req.user from Supabase Auth does not include role_id
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("role_id")
+      .eq("id", author_id)
+      .single();
+
+    if (profileError) throw profileError;
+
+    const isAdmin = profile?.role_id === 1;
 
     const postData = {
       title,

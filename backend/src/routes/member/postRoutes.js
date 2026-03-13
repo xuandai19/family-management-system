@@ -12,6 +12,8 @@ import {
   updateMyPost,
   deleteMyPost,
   toggleLikePost,
+  getPostComments,
+  addPostComment,
 } from "../../controllers/member/postController.js";
 import { verifyToken } from "../../middlewares/authMiddleware.js";
 
@@ -40,5 +42,9 @@ router.delete("/:id", deleteMyPost);
 
 // Like/Unlike bài viết
 router.post("/:id/like", toggleLikePost);
+
+// Bình luận bài viết
+router.get("/:id/comments", getPostComments);
+router.post("/:id/comments", addPostComment);
 
 export default router;

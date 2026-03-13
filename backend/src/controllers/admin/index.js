@@ -30,6 +30,9 @@ export {
   approveMemberRegistration,
   rejectMemberRegistration,
   approveSpouseRegistration,
+  getAddMemberRequests,
+  approveAddMemberRequest,
+  rejectAddMemberRequest,
 } from "./registrationController.js";
 
 // User/Profile Management
